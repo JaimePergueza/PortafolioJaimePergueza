@@ -13,32 +13,29 @@ import Scene01 from "./scene/Scene01";
 function LoadingOverlay() {
   const { active, progress, item, loaded, total } = useProgress();
 
-  if (!active) {
-    return null;
-  }
+  if (!active) return null;
 
   return (
     <Html center>
       <div className="loading-card">
-        <p className="loading-label">Loading Scene</p>
+        <p className="loading-label">Inicializando escena</p>
         <strong>{Math.round(progress)}%</strong>
-        <span>
-          {loaded}/{total}
-        </span>
+        <span>{loaded}/{total}</span>
         {item ? <small>{item.split("/").pop()}</small> : null}
       </div>
     </Html>
   );
 }
 
-function CameraRig({ dragState }) {
+function CameraRig({ dragState, storyProgress }) {
   const { camera } = useThree();
   const lookAt = useMemo(() => new THREE.Vector3(), []);
-  const basePosition = useMemo(() => new THREE.Vector3(5.9, 5.4, 7.4), []);
-  const baseTarget = useMemo(() => new THREE.Vector3(0, 1.5, 0), []);
+  const desiredPosition = useMemo(() => new THREE.Vector3(), []);
+  const desiredTarget = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((_, delta) => {
     const drag = dragState.current;
+    const progress = storyProgress.current;
 
     if (!drag.isDragging) {
       drag.targetX = THREE.MathUtils.damp(drag.targetX, 0, 4, delta);
@@ -48,30 +45,24 @@ function CameraRig({ dragState }) {
     drag.currentX = THREE.MathUtils.damp(drag.currentX, drag.targetX, 6, delta);
     drag.currentY = THREE.MathUtils.damp(drag.currentY, drag.targetY, 6, delta);
 
-    camera.position.x = THREE.MathUtils.damp(
-      camera.position.x,
-      basePosition.x + drag.currentX,
-      5,
-      delta,
-    );
-    camera.position.y = THREE.MathUtils.damp(
-      camera.position.y,
-      basePosition.y - drag.currentY * 0.45,
-      5,
-      delta,
-    );
-    camera.position.z = THREE.MathUtils.damp(
-      camera.position.z,
-      basePosition.z + Math.abs(drag.currentX) * 0.08,
-      5,
-      delta,
+    // Plano 1: vista general del estudio. Plano 2: acercamiento al personaje.
+    desiredPosition.set(
+      THREE.MathUtils.lerp(5.9, 3.55, progress) + drag.currentX,
+      THREE.MathUtils.lerp(5.4, 3.15, progress) - drag.currentY * 0.45,
+      THREE.MathUtils.lerp(7.4, 5.05, progress) + Math.abs(drag.currentX) * 0.08,
     );
 
-    lookAt.set(
-      baseTarget.x + drag.currentX * 0.28,
-      baseTarget.y + drag.currentY * 0.18,
-      baseTarget.z,
+    desiredTarget.set(
+      THREE.MathUtils.lerp(0, 0.28, progress) + drag.currentX * 0.28,
+      THREE.MathUtils.lerp(1.5, 1.52, progress) + drag.currentY * 0.18,
+      THREE.MathUtils.lerp(0, 0.58, progress),
     );
+
+    camera.position.x = THREE.MathUtils.damp(camera.position.x, desiredPosition.x, 4.5, delta);
+    camera.position.y = THREE.MathUtils.damp(camera.position.y, desiredPosition.y, 4.5, delta);
+    camera.position.z = THREE.MathUtils.damp(camera.position.z, desiredPosition.z, 4.5, delta);
+
+    lookAt.lerp(desiredTarget, 1 - Math.exp(-5 * delta));
     camera.lookAt(lookAt);
   });
 
@@ -80,6 +71,8 @@ function CameraRig({ dragState }) {
 
 export default function App() {
   const [isDragging, setIsDragging] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const storyProgress = useRef(0);
   const dragState = useRef({
     isDragging: false,
     lastX: 0,
@@ -89,6 +82,16 @@ export default function App() {
     currentX: 0,
     currentY: 0,
   });
+
+  const updateProgress = (nextValue) => {
+    const next = THREE.MathUtils.clamp(nextValue, 0, 1);
+    storyProgress.current = next;
+    setProgress(next);
+  };
+
+  const handleWheel = (event) => {
+    updateProgress(storyProgress.current + event.deltaY * 0.00085);
+  };
 
   const handlePointerDown = (event) => {
     event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -100,9 +103,7 @@ export default function App() {
 
   const handlePointerMove = (event) => {
     const drag = dragState.current;
-    if (!drag.isDragging) {
-      return;
-    }
+    if (!drag.isDragging) return;
 
     const deltaX = event.clientX - drag.lastX;
     const deltaY = event.clientY - drag.lastY;
@@ -128,24 +129,53 @@ export default function App() {
     setIsDragging(false);
   };
 
+  const terminalVisible = progress > 0.42;
+  const greetingVisible = progress > 0.62;
+
   return (
     <div
       className={`app-shell${isDragging ? " is-dragging" : ""}`}
+      onWheel={handleWheel}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
     >
-      <div className="hud">
-        <p className="eyebrow">Scene 01</p>
+      <header className="hud">
+        <p className="eyebrow">Scene 01 · The Studio</p>
         <h1>Jaime Pergueza</h1>
-        <p className="copy">Web Dev</p>
+        <p className="copy">Developer · 3D · XR</p>
+      </header>
+
+      <aside className={`terminal-card${terminalVisible ? " is-visible" : ""}`}>
+        <div className="terminal-topbar">
+          <span />
+          <span />
+          <span />
+          <small>main.py</small>
+        </div>
+        <code>
+          <span className="terminal-keyword">print</span>
+          <span>(</span>
+          <span className="terminal-string">&quot;Hola Mundo&quot;</span>
+          <span>)</span>
+        </code>
+        <p className={greetingVisible ? "is-visible" : ""}>Hola Mundo</p>
+      </aside>
+
+      <div className={`scroll-cue${progress > 0.08 ? " is-hidden" : ""}`}>
+        <span>Scroll para entrar</span>
+        <i />
+      </div>
+
+      <div className="story-meter" aria-hidden="true">
+        <span style={{ transform: `scaleY(${Math.max(progress, 0.04)})` }} />
       </div>
 
       <Canvas
         camera={{ position: [5.9, 5.4, 7.4], fov: 34 }}
-        dpr={[1, 2]}
-        gl={{ antialias: true }}
+        dpr={[1, 1.75]}
+        gl={{ antialias: true, powerPreference: "high-performance" }}
         shadows
       >
         <color attach="background" args={["#101626"]} />
@@ -155,16 +185,16 @@ export default function App() {
           <Scene01 />
         </Suspense>
         <LoadingOverlay />
-        <CameraRig dragState={dragState} />
+        <CameraRig dragState={dragState} storyProgress={storyProgress} />
 
-        <EffectComposer>
+        <EffectComposer multisampling={0}>
           <Bloom
             intensity={0.72}
             luminanceThreshold={0.45}
             luminanceSmoothing={0.28}
             mipmapBlur
           />
-          <Noise opacity={0.014} />
+          <Noise opacity={0.012} />
           <Vignette eskil={false} offset={0.12} darkness={0.52} />
         </EffectComposer>
       </Canvas>
