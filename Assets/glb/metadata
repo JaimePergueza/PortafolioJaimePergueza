@@ -1,0 +1,122 @@
+{
+	"assetNamespace": "fab",
+	"listing":
+	{
+		"averageRating": 0,
+		"createdAt": "",
+		"description": "<p>This is a custom-made DESK low-poly 3D model designed for VR, AR, and real-time applications. Its optimized low-poly design ensures smooth performance in any interactive environment, making it ideal for games, virtual reality experiences, augmented reality projects, mobile apps, or any other real-time 3D application.</p>\n<p>Thanks to its versatility, this model can also be used for visualization, prototyping, simulations, or even as part of high-performance scenes where efficiency is key. Whether you need assets for professional projects, educational purposes, or personal creations, this model is ready to be integrated seamlessly into your workflow.</p>\n<p>Made by <strong>TheAppXR</strong> team.</p>",
+		"isAiForbidden": true,
+		"isAiGenerated": false,
+		"lastUpdatedAt": "",
+		"listingType": "3d-model",
+		"media": "https://media.fab.com/image_previews/gallery_images/cdf8c1ba-a34f-4cb6-a641-f24b8f033977/f9a26a0c-b86c-4b4c-a94a-0b0932299780.jpeg",
+		"publishedAt": "2025-08-28T15:35:48.466145Z",
+		"reviewCount": 0,
+		"thumbnail": "https://media.fab.com/image_previews/gallery_images/7876e76f-f1c6-42dc-a361-455a549aecf3/45bc8730-4d4a-4cd7-938f-91aac48cedc0.jpeg",
+		"title": "DESK 1 LOW POLY",
+		"uid": "ec5f0dfa-2f1b-40f0-b1df-78b327aaa742",
+		"updatedAt": "",
+		"user":
+		{
+			"coverImageUrl": "",
+			"profileImageUrl": "https://cdn1.epicgames.com/fab/seller/o-gyh5xk7wjdzfthrssfdluflppehspd/profile/bf73bacd.png",
+			"sellerName": "Oobe-Xr Srl",
+			"uid": "169b2ebf-4e30-4672-acff-1aeb9c17f44c"
+		},
+		"tags": [
+			{
+				"name": "Design",
+				"slug": "design",
+				"uid": "08fa1bc1-2eb0-4438-9a93-9c2cdd4608cd"
+			},
+			{
+				"name": "Furniture",
+				"slug": "furniture",
+				"uid": "0f6b3b40-8715-4963-b755-0160e80cf12c"
+			},
+			{
+				"name": "Piece",
+				"slug": "piece",
+				"uid": "139b4f93-5387-4b5c-a6db-0335f5b67de6"
+			},
+			{
+				"name": "Lowpoly",
+				"slug": "lowpoly",
+				"uid": "451806dc-649e-43b7-9c2e-a54485de14b6"
+			},
+			{
+				"name": "Office",
+				"slug": "office",
+				"uid": "97e8ad1e-f7c1-4bc3-9293-bb9f268d5d60"
+			},
+			{
+				"name": "Mapped",
+				"slug": "mapped",
+				"uid": "cd6755e9-d286-49f8-85ab-785a12fbce44"
+			},
+			{
+				"name": "Desk",
+				"slug": "desk",
+				"uid": "e3fb83c1-bd6c-4f09-a01a-5fb4359dbe21"
+			},
+			{
+				"name": "Uv",
+				"slug": "uv",
+				"uid": "fbfe9599-1f4a-4957-bd0d-b72dcf40e82c"
+			}
+		],
+		"category":
+		{
+			"name": "Edificios y arquitectura",
+			"path": "buildings-architecture",
+			"slug": "buildings-architecture",
+			"uid": "eec3bdd5-ba7a-45a8-b15d-67462b9630f6"
+		},
+		"assetFormats": [
+			{
+				"assetFormatType":
+				{
+					"name": "GLB",
+					"groupName": "Formatos de intercambio 3D",
+					"code": "glb",
+					"icon": "cube",
+					"extensions": [
+						"glb"
+					]
+				}
+			},
+			{
+				"assetFormatType":
+				{
+					"name": "Archivos convertidos",
+					"groupName": "",
+					"code": "converted-files",
+					"icon": "cube",
+					"extensions": [
+						"gltf",
+						"glb",
+						"usdz"
+					]
+				}
+			}
+		],
+		"_PluginMetas":
+		{
+			"apiDataVersion": "0.0.1",
+			"entitlementUid": "4b0e7e23-f476-42b2-b086-857a18c59a5a",
+			"cacheSize": 0,
+			"downloaded": []
+		}
+	},
+	"target": "",
+	"quality": "",
+	"format": "glb",
+	"fileId": "2f1be2e8-452a-4201-9a36-a824cb50b4c7",
+	"platformIncluded": "",
+	"distributionPointBaseUrls": [],
+	"distributionMethod": "",
+	"entitlementUid": "4b0e7e23-f476-42b2-b086-857a18c59a5a",
+	"invertedNormal": false,
+	"isConverted": false,
+	"isQuixel": false
+}

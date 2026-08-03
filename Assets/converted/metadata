@@ -1,0 +1,112 @@
+{
+	"assetNamespace": "fab",
+	"listing":
+	{
+		"averageRating": 0,
+		"createdAt": "",
+		"description": "<p>Low poly isometric living room</p>",
+		"isAiForbidden": true,
+		"isAiGenerated": false,
+		"lastUpdatedAt": "",
+		"listingType": "3d-model",
+		"media": "https://media.fab.com/image_previews/gallery_images/a7ced59d-69c9-4604-a525-9417c81a1eef/b3365a0c-a06e-41d5-92a8-1eadac3c4648.jpeg",
+		"publishedAt": "2024-10-23T18:41:05.654476Z",
+		"reviewCount": 0,
+		"thumbnail": "https://media.fab.com/image_previews/gallery_images/272f5791-555f-48fa-a3fd-ebddabea65c9/f7431f91-5cc3-4a39-bde2-cdf53238aa9b.jpeg",
+		"title": "Isometric Low Poly Living Room",
+		"uid": "74cce99a-80a9-4a94-ad7f-5c2f031963c0",
+		"updatedAt": "",
+		"user":
+		{
+			"coverImageUrl": "https://cdn1.epicgames.com/fab/seller/o-z7d86w6arf5q3yd66jtxcrmusvqmxg/backgroundImage/blob-1920x540-25cecbfc85e2a07dce2ee94c4916591d.jpg",
+			"profileImageUrl": "https://cdn1.epicgames.com/fab/seller/o-z7d86w6arf5q3yd66jtxcrmusvqmxg/profileImage/blob-500x500-f251ffe9dec6c97748feee3d79641433.jpg",
+			"sellerName": "Oliver Cooke",
+			"uid": "2e0f96f0-f2e5-400b-993d-8e2e7f11dfcb"
+		},
+		"tags": [
+			{
+				"name": "Furniture",
+				"slug": "furniture",
+				"uid": "0f6b3b40-8715-4963-b755-0160e80cf12c"
+			},
+			{
+				"name": "Lowpoly",
+				"slug": "lowpoly",
+				"uid": "451806dc-649e-43b7-9c2e-a54485de14b6"
+			},
+			{
+				"name": "Livingroom",
+				"slug": "livingroom",
+				"uid": "8a36b584-c67b-4724-b84d-dd6778fd4c3c"
+			},
+			{
+				"name": "Isometric",
+				"slug": "isometric",
+				"uid": "c2b1da44-2efd-4013-9a11-e303652e1651"
+			},
+			{
+				"name": "Architecture",
+				"slug": "architecture",
+				"uid": "cfb43d77-a91f-42ad-bd9d-b472c97d3f06"
+			},
+			{
+				"name": "Room",
+				"slug": "room",
+				"uid": "eb8d1a47-05e1-4746-9da4-3f71da863dcb"
+			}
+		],
+		"category":
+		{
+			"name": "Edificios y arquitectura",
+			"path": "buildings-architecture",
+			"slug": "buildings-architecture",
+			"uid": "eec3bdd5-ba7a-45a8-b15d-67462b9630f6"
+		},
+		"assetFormats": [
+			{
+				"assetFormatType":
+				{
+					"name": "FBX",
+					"groupName": "Formatos de intercambio 3D",
+					"code": "fbx",
+					"icon": "cube",
+					"extensions": [
+						"fbx"
+					]
+				}
+			},
+			{
+				"assetFormatType":
+				{
+					"name": "Archivos convertidos",
+					"groupName": "",
+					"code": "converted-files",
+					"icon": "cube",
+					"extensions": [
+						"gltf",
+						"glb",
+						"usdz"
+					]
+				}
+			}
+		],
+		"_PluginMetas":
+		{
+			"apiDataVersion": "0.0.1",
+			"entitlementUid": "3ea22b94-aaec-4304-8475-b6042c473d48",
+			"cacheSize": 0,
+			"downloaded": []
+		}
+	},
+	"target": "",
+	"quality": "",
+	"format": "glb",
+	"fileId": "a7aaa810-5002-4e93-80d3-6aceee06fd9f",
+	"platformIncluded": "",
+	"distributionPointBaseUrls": [],
+	"distributionMethod": "",
+	"entitlementUid": "3ea22b94-aaec-4304-8475-b6042c473d48",
+	"invertedNormal": false,
+	"isConverted": true,
+	"isQuixel": false
+}

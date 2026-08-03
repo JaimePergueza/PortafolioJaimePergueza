@@ -1,0 +1,331 @@
+{
+  "object": {
+    "name": "Mesh_0",
+    "mesh_data": "Mesh_0",
+    "location": [
+      0.0,
+      0.0,
+      0.792115
+    ],
+    "rotation_euler": [
+      -0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "dimensions": [
+      1.899403,
+      1.265532,
+      1.591628
+    ],
+    "bbox_world": [
+      [
+        -0.950597,
+        -0.630132,
+        -0.004268
+      ],
+      [
+        -0.950597,
+        -0.630132,
+        1.58736
+      ],
+      [
+        -0.950597,
+        0.6354,
+        1.58736
+      ],
+      [
+        -0.950597,
+        0.6354,
+        -0.004268
+      ],
+      [
+        0.948806,
+        -0.630132,
+        -0.004268
+      ],
+      [
+        0.948806,
+        -0.630132,
+        1.58736
+      ],
+      [
+        0.948806,
+        0.6354,
+        1.58736
+      ],
+      [
+        0.948806,
+        0.6354,
+        -0.004268
+      ]
+    ],
+    "modifiers": []
+  },
+  "counts": {
+    "vertices": 443357,
+    "edges": 1330988,
+    "faces": 887326,
+    "triangles": 887326,
+    "quads": 0,
+    "ngons": 0,
+    "face_sides": {
+      "3": 887326
+    },
+    "materials": 1,
+    "uv_layers": 1,
+    "color_attributes": 0,
+    "shape_keys": 0
+  },
+  "topology": {
+    "euler_characteristic": -305,
+    "connected_components": 15,
+    "largest_components": [
+      {
+        "vertices": 443339,
+        "faces": 887320
+      },
+      {
+        "vertices": 5,
+        "faces": 6
+      },
+      {
+        "vertices": 1,
+        "faces": 0
+      },
+      {
+        "vertices": 1,
+        "faces": 0
+      },
+      {
+        "vertices": 1,
+        "faces": 0
+      },
+      {
+        "vertices": 1,
+        "faces": 0
+      },
+      {
+        "vertices": 1,
+        "faces": 0
+      },
+      {
+        "vertices": 1,
+        "faces": 0
+      },
+      {
+        "vertices": 1,
+        "faces": 0
+      },
+      {
+        "vertices": 1,
+        "faces": 0
+      }
+    ],
+    "boundary_edges": 4,
+    "manifold_edges": 1330980,
+    "multi_face_edges": 4,
+    "loose_edges": 0,
+    "missing_mesh_edges_used_by_faces": 0,
+    "isolated_vertices": 13,
+    "edge_only_vertices": 0,
+    "face_only_vertices": 0
+  },
+  "geometry_health": {
+    "zero_length_edges": 0,
+    "zero_area_faces": 0,
+    "repeated_vertex_faces": 0,
+    "duplicate_vertex_clusters_tolerance": 1.8994029760360717e-06,
+    "duplicate_vertex_clusters": 0,
+    "duplicate_vertices_extra": 0
+  },
+  "triangle_quality": {
+    "triangles_checked": 887326,
+    "min_angle_lt_2_degrees": 47,
+    "min_angle_lt_5_degrees": 1030,
+    "edge_ratio_gt_25": 3,
+    "edge_ratio_gt_50": 0
+  },
+  "areas": {
+    "min": 3.480430166291626e-09,
+    "p01": 5.594151843979489e-07,
+    "p05": 1.0623708703860757e-06,
+    "median": 6.989212124608457e-06,
+    "p95": 7.174476741056424e-05,
+    "p99": 0.00010277619367116131,
+    "max": 0.00031010169186629355,
+    "average": 1.8745139272438818e-05
+  },
+  "valence": {
+    "min": 0,
+    "max": 19,
+    "distribution": {
+      "0": 13,
+      "2": 2,
+      "3": 3563,
+      "4": 38793,
+      "5": 107696,
+      "6": 158663,
+      "7": 88505,
+      "8": 33239,
+      "9": 9628,
+      "10": 2457,
+      "11": 632,
+      "12": 137,
+      "13": 24,
+      "14": 3,
+      "15": 1,
+      "19": 1
+    },
+    "vertices_valence_ge_12": 166,
+    "highest_valence_samples": [
+      {
+        "index": 443274,
+        "valence": 19
+      },
+      {
+        "index": 443257,
+        "valence": 15
+      },
+      {
+        "index": 58623,
+        "valence": 14
+      },
+      {
+        "index": 157965,
+        "valence": 14
+      },
+      {
+        "index": 321603,
+        "valence": 14
+      },
+      {
+        "index": 5882,
+        "valence": 13
+      },
+      {
+        "index": 9944,
+        "valence": 13
+      },
+      {
+        "index": 58997,
+        "valence": 13
+      },
+      {
+        "index": 62092,
+        "valence": 13
+      },
+      {
+        "index": 97196,
+        "valence": 13
+      },
+      {
+        "index": 109096,
+        "valence": 13
+      },
+      {
+        "index": 109597,
+        "valence": 13
+      },
+      {
+        "index": 148953,
+        "valence": 13
+      },
+      {
+        "index": 152727,
+        "valence": 13
+      },
+      {
+        "index": 158534,
+        "valence": 13
+      },
+      {
+        "index": 161377,
+        "valence": 13
+      },
+      {
+        "index": 167723,
+        "valence": 13
+      },
+      {
+        "index": 173871,
+        "valence": 13
+      },
+      {
+        "index": 174988,
+        "valence": 13
+      },
+      {
+        "index": 188549,
+        "valence": 13
+      }
+    ]
+  },
+  "materials": {
+    "slot_names": [
+      "Material.001"
+    ],
+    "faces_by_material_index": {
+      "0": 887326
+    }
+  },
+  "samples": {
+    "boundary_edges_vertex_indices": [
+      [
+        179995,
+        180415
+      ],
+      [
+        179995,
+        180379
+      ],
+      [
+        109310,
+        442931
+      ],
+      [
+        109313,
+        442931
+      ]
+    ],
+    "multi_face_edges": [
+      {
+        "edge_vertices": [
+          100028,
+          100037
+        ],
+        "face_count": 4
+      },
+      {
+        "edge_vertices": [
+          109310,
+          109313
+        ],
+        "face_count": 3
+      },
+      {
+        "edge_vertices": [
+          180379,
+          180415
+        ],
+        "face_count": 3
+      },
+      {
+        "edge_vertices": [
+          180810,
+          180811
+        ],
+        "face_count": 4
+      }
+    ],
+    "zero_length_edge_indices": [],
+    "zero_area_face_indices": [],
+    "repeated_vertex_face_indices": [],
+    "duplicate_vertex_clusters": [],
+    "ngons": []
+  }
+}

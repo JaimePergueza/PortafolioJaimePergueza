@@ -1,0 +1,9 @@
+[mcp_servers.BlenderMCP]
+command = 'C:\Users\jaime\AppData\Local\OpenAI\Codex\bin\node.exe'
+args = ['D:\\Experimento\\tools\\blender_mcp_bridge.mjs']
+startup_timeout_sec = 20
+
+[mcp_servers.BlenderMCP.env]
+BLENDER_MCP_HOST = "127.0.0.1"
+BLENDER_MCP_PORT = "9876"
+BLENDER_MCP_TIMEOUT_MS = "15000"

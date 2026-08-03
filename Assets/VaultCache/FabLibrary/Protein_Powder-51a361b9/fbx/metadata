@@ -1,0 +1,113 @@
+{
+	"assetNamespace": "fab",
+	"listing":
+	{
+		"averageRating": 0,
+		"createdAt": "",
+		"description": "<p>Protein powder made in blender , Protein Powder, perfect for all sorts of projects. \nI decided to create a model and a brand for Protein Powder. I am building up my portfolio and experience for professional product design. \nfor any moodel needed contact me on my sketchfab</p>",
+		"isAiForbidden": false,
+		"isAiGenerated": false,
+		"lastUpdatedAt": "",
+		"listingType": "3d-model",
+		"media": "https://media.fab.com/image_previews/gallery_images/6ecf4613-f505-4168-b277-205791412bc5/cef72c85-d3f7-462c-a58c-04bdf46212a6.jpeg",
+		"publishedAt": "2025-10-27T13:36:44.951416Z",
+		"reviewCount": 0,
+		"thumbnail": "https://media.fab.com/image_previews/gallery_images/6fa21c1d-7243-40c4-97a4-c70105ac0490/4c9cccfc-0611-479a-9791-3f890c38e323.jpeg",
+		"title": "Protein Powder",
+		"uid": "51a361b9-0c61-4bf1-83bb-8ec88176966d",
+		"updatedAt": "",
+		"user":
+		{
+			"coverImageUrl": "https://cdn1.epicgames.com/fab/seller/o-4zkhh6rng2xck4gq68gc5ms7l43kn3/backgroundImage/blob-1920x540-5b8e5b117d078c2e882e872d55ffd888.jpg",
+			"profileImageUrl": "",
+			"sellerName": "viveksha",
+			"uid": "2c420966-67dc-4e0a-ba24-6776a8162535"
+		},
+		"tags": [
+			{
+				"name": "Store",
+				"slug": "store",
+				"uid": "045659f5-4279-4f6b-8211-2ceebc57c3cc"
+			},
+			{
+				"name": "Sale",
+				"slug": "sale",
+				"uid": "25025e76-0d21-4ad7-8aab-c0137180c205"
+			},
+			{
+				"name": "Gym",
+				"slug": "gym",
+				"uid": "4de2e124-c78f-4a0f-99ef-f31190dedcb8"
+			},
+			{
+				"name": "Weight",
+				"slug": "weight",
+				"uid": "66e57027-3555-4ef9-8c3c-837a907b81ad"
+			},
+			{
+				"name": "Protein",
+				"slug": "protein",
+				"uid": "8065b93d-d8cf-40df-b74d-a23c73d7b57b"
+			},
+			{
+				"name": "Powder",
+				"slug": "powder",
+				"uid": "87ddf52f-68e7-4ce0-a40b-f0b69c68d37d"
+			},
+			{
+				"name": "Fitness",
+				"slug": "fitness",
+				"uid": "ac18fc5b-3ebd-4986-b0c8-b31fd1fa0845"
+			},
+			{
+				"name": "Retail",
+				"slug": "retail",
+				"uid": "aef2b637-62e4-4266-ad91-ca696774430d"
+			},
+			{
+				"name": "Storefront",
+				"slug": "storefront",
+				"uid": "ec34d031-2832-49c1-8306-0aaa2f7115f6"
+			}
+		],
+		"category":
+		{
+			"name": "Comidas y bebidas",
+			"path": "food-drink",
+			"slug": "food-drink",
+			"uid": "19e2ae56-4ba7-4a79-9c85-717756af10be"
+		},
+		"assetFormats": [
+			{
+				"assetFormatType":
+				{
+					"name": "FBX",
+					"groupName": "Formatos de intercambio 3D",
+					"code": "fbx",
+					"icon": "cube",
+					"extensions": [
+						"fbx"
+					]
+				}
+			}
+		],
+		"_PluginMetas":
+		{
+			"apiDataVersion": "0.0.1",
+			"entitlementUid": "6d2fdee8-8ecc-4e1f-bfdc-7cfc6ecf7195",
+			"cacheSize": 0,
+			"downloaded": []
+		}
+	},
+	"target": "",
+	"quality": "",
+	"format": "fbx",
+	"fileId": "c2656b1f-cdc6-403c-8942-c60a0be666a3",
+	"platformIncluded": "",
+	"distributionPointBaseUrls": [],
+	"distributionMethod": "",
+	"entitlementUid": "6d2fdee8-8ecc-4e1f-bfdc-7cfc6ecf7195",
+	"invertedNormal": false,
+	"isConverted": false,
+	"isQuixel": false
+}

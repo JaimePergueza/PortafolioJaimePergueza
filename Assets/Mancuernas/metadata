@@ -1,0 +1,108 @@
+{
+	"assetNamespace": "fab",
+	"listing":
+	{
+		"averageRating": 5,
+		"createdAt": "",
+		"description": "<p><span>A simple low poly boy with 24 Animations.</span></p><p><span><br></span></p><p><span><strong>Gym Animations</strong>:</span></p><ul><li><p><span>Air Squat</span></p></li><li><p><span>Bench Press</span></p></li><li><p><span>Bicep</span></p></li><li><p><span>Crunches</span></p></li><li><p><span>Cycling</span></p></li><li><p><span>Treadmill Running</span></p></li><li><p><span>Boxing Warm Up</span></p></li><li><p><span>One Punching</span></p></li><li><p><span>Punching</span></p></li><li><p><span>Tired Punch</span></p></li><li><p><span>Warming Up</span></p></li></ul><p><span><strong>Normal Animations</strong>:</span></p><ul><li><p><span>Idle</span></p></li><li><p><span>Walk</span></p></li><li><p><span>Jump</span></p></li><li><p><span>Jump in Style</span></p></li><li><p><span>Sitting on Chair</span></p></li><li><p><span>Sitting Up on Chair</span></p></li><li><p><span>Sleep</span></p></li><li><p><span>Sleep Back to Stand</span></p></li><li><p><span>Victory</span></p></li><li><p><span>Win</span></p></li><li><p><span>Lose</span></p></li></ul><p><span><strong>number of unique assets: 5 (Prefab)</strong></span></p><p><span><strong>2 Prefab of Boy,1 Prefab of Bench_Press_Barbells, 1 Prefab of Dumbbell, 1 Prefab of Treadmill</strong></span></p>",
+		"isAiForbidden": false,
+		"isAiGenerated": false,
+		"lastUpdatedAt": "",
+		"listingType": "3d-model",
+		"media": "https://media.fab.com/image_previews/gallery_images/648095fb-c9b7-4bc4-bbb4-8e9bbb012e48/1a0a48bf-be3b-4cee-824c-adfb014c5ff5.png",
+		"publishedAt": "2025-08-08T05:45:42.677980Z",
+		"reviewCount": 1,
+		"thumbnail": "https://media.fab.com/image_previews/gallery_images/7f84651b-505e-45de-b73d-a3a17d7d9c59/f87ba536-585e-4606-932a-51276152b402.png",
+		"title": "Boy with gym animations & BlendShape",
+		"uid": "d85b2059-8733-4433-ae62-84d0e6e8a995",
+		"updatedAt": "",
+		"user":
+		{
+			"coverImageUrl": "https://cdn1.epicgames.com/fab/seller/o-zn8q8h94qzxjvm24m4fexva7wxwg7x/backgroundImage/blob-1920x540-c0765c6e2ad4e1800c2f90d486565fcc.jpg",
+			"profileImageUrl": "",
+			"sellerName": "MultiTech Studio",
+			"uid": "e617f309-efe3-4202-9821-459f481c525e"
+		},
+		"tags": [
+			{
+				"name": "Lowpoly",
+				"slug": "lowpoly",
+				"uid": "451806dc-649e-43b7-9c2e-a54485de14b6"
+			},
+			{
+				"name": "Gym",
+				"slug": "gym",
+				"uid": "4de2e124-c78f-4a0f-99ef-f31190dedcb8"
+			},
+			{
+				"name": "Animated",
+				"slug": "animated",
+				"uid": "8e61a209-4e02-4dd1-8e44-cc2bf9356e7a"
+			},
+			{
+				"name": "Blend",
+				"slug": "blend",
+				"uid": "a6ae9e7e-ccd4-40a0-a5ba-4877f3958713"
+			},
+			{
+				"name": "Boxing",
+				"slug": "boxing",
+				"uid": "af937ea8-8ec4-4112-87e4-07f1406864d7"
+			},
+			{
+				"name": "Rigged",
+				"slug": "rigged",
+				"uid": "c5c1f70c-aabe-41d4-bd3a-e7e00ab60f0c"
+			},
+			{
+				"name": "Simple",
+				"slug": "simple",
+				"uid": "cbf23df6-c55a-49e8-b070-65fa6be73d4c"
+			},
+			{
+				"name": "Character",
+				"slug": "character",
+				"uid": "f07e8c06-66ed-4396-81cf-108f0afcb6d6"
+			}
+		],
+		"category":
+		{
+			"name": "Humanos",
+			"path": "characters-creatures/humans",
+			"slug": "characters-creatures--humans",
+			"uid": "0a4f7590-4376-400b-a6e4-c7a658cbab47"
+		},
+		"assetFormats": [
+			{
+				"assetFormatType":
+				{
+					"name": "Unity",
+					"groupName": "Formatos del motor de juego",
+					"code": "unity",
+					"icon": "unity",
+					"extensions": [
+						"unitypackage"
+					]
+				}
+			}
+		],
+		"_PluginMetas":
+		{
+			"apiDataVersion": "0.0.1",
+			"entitlementUid": "ceb0baf4-6986-48b1-a1d8-a5dd5fefc6c9",
+			"cacheSize": 0,
+			"downloaded": []
+		}
+	},
+	"target": "",
+	"quality": "",
+	"format": "unity",
+	"fileId": "d9bb9edf-8e6c-4ffc-a4ec-8aa74e29d197",
+	"platformIncluded": "",
+	"distributionPointBaseUrls": [],
+	"distributionMethod": "",
+	"entitlementUid": "ceb0baf4-6986-48b1-a1d8-a5dd5fefc6c9",
+	"invertedNormal": false,
+	"isConverted": false,
+	"isQuixel": false
+}
