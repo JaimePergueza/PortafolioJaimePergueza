@@ -24,9 +24,9 @@ function CameraRig({ progressRef, pointerRef }) {
     const idleY = Math.sin(state.clock.elapsedTime * 0.09) * 0.012;
 
     desired.set(
-      THREE.MathUtils.lerp(9.4, 6.7, p) + pointer.x * 0.18 + idleX,
-      THREE.MathUtils.lerp(4.35, 3.15, p) + pointer.y * 0.1 + idleY,
-      THREE.MathUtils.lerp(10.2, 6.35, p),
+      THREE.MathUtils.lerp(-9.2, -6.4, p) + pointer.x * 0.18 + idleX,
+      THREE.MathUtils.lerp(4.1, 3.0, p) + pointer.y * 0.1 + idleY,
+      THREE.MathUtils.lerp(9.6, 6.15, p),
     );
 
     camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.25, delta);
@@ -34,9 +34,9 @@ function CameraRig({ progressRef, pointerRef }) {
     camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.25, delta);
 
     target.set(
-      THREE.MathUtils.lerp(-0.25, 1.1, p),
-      THREE.MathUtils.lerp(1.65, 1.75, p),
-      THREE.MathUtils.lerp(-1.65, -2.25, p),
+      THREE.MathUtils.lerp(0.25, 1.4, p),
+      THREE.MathUtils.lerp(1.6, 1.72, p),
+      THREE.MathUtils.lerp(-1.7, -2.25, p),
     );
     camera.lookAt(target);
   });
@@ -74,7 +74,7 @@ export default function App() {
       </div>
 
       <Canvas
-        camera={{ position: [9.4, 4.35, 10.2], fov: 42, near: 0.1, far: 70 }}
+        camera={{ position: [-9.2, 4.1, 9.6], fov: 42, near: 0.1, far: 70 }}
         dpr={[1, 1.5]}
         gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.28 }}
         shadows
