@@ -19,23 +19,23 @@ function CameraRig({ progressRef, pointerRef }) {
   useFrame((state, delta) => {
     const p = progressRef.current;
     const pointer = pointerRef.current;
-    const idleX = Math.sin(state.clock.elapsedTime * 0.12) * 0.025;
-    const idleY = Math.sin(state.clock.elapsedTime * 0.09) * 0.015;
+    const idleX = Math.sin(state.clock.elapsedTime * 0.12) * 0.018;
+    const idleY = Math.sin(state.clock.elapsedTime * 0.09) * 0.012;
 
     desired.set(
-      THREE.MathUtils.lerp(-8.4, -5.9, p) + pointer.x * 0.22 + idleX,
-      THREE.MathUtils.lerp(3.55, 2.7, p) + pointer.y * 0.12 + idleY,
-      THREE.MathUtils.lerp(7.8, 4.7, p),
+      THREE.MathUtils.lerp(9.4, 6.7, p) + pointer.x * 0.18 + idleX,
+      THREE.MathUtils.lerp(4.35, 3.15, p) + pointer.y * 0.1 + idleY,
+      THREE.MathUtils.lerp(10.2, 6.35, p),
     );
 
-    camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.5, delta);
-    camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.5, delta);
-    camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.5, delta);
+    camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.25, delta);
+    camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.25, delta);
+    camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.25, delta);
 
     target.set(
-      THREE.MathUtils.lerp(0.2, 1.2, p),
-      THREE.MathUtils.lerp(1.55, 1.7, p),
-      THREE.MathUtils.lerp(-1.65, -2.15, p),
+      THREE.MathUtils.lerp(-0.25, 1.1, p),
+      THREE.MathUtils.lerp(1.65, 1.75, p),
+      THREE.MathUtils.lerp(-1.65, -2.25, p),
     );
     camera.lookAt(target);
   });
@@ -63,7 +63,7 @@ export default function App() {
         pointerRef.current.y = 0.5 - event.clientY / window.innerHeight;
       }}
     >
-      <div className={`intro-copy${progress > 0.62 ? " is-visible" : ""}`}>
+      <div className={`intro-copy${progress > 0.64 ? " is-visible" : ""}`}>
         <code>print(&quot;Hola Mundo&quot;)</code>
         <span>Hola Mundo</span>
       </div>
@@ -73,20 +73,20 @@ export default function App() {
       </div>
 
       <Canvas
-        camera={{ position: [-8.4, 3.55, 7.8], fov: 43, near: 0.1, far: 60 }}
+        camera={{ position: [9.4, 4.35, 10.2], fov: 42, near: 0.1, far: 70 }}
         dpr={[1, 1.5]}
-        gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.15 }}
+        gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.28 }}
         shadows
       >
-        <color attach="background" args={["#090b10"]} />
-        <fog attach="fog" args={["#090b10", 15, 29]} />
+        <color attach="background" args={["#07090d"]} />
+        <fog attach="fog" args={["#080a0f", 18, 34]} />
         <Suspense fallback={null}><Scene01 /></Suspense>
         <LoadingOverlay />
         <CameraRig progressRef={progressRef} pointerRef={pointerRef} />
         <EffectComposer multisampling={0}>
-          <Bloom intensity={0.34} luminanceThreshold={0.72} luminanceSmoothing={0.38} mipmapBlur />
-          <Noise opacity={0.004} />
-          <Vignette eskil={false} offset={0.12} darkness={0.28} />
+          <Bloom intensity={0.3} luminanceThreshold={0.76} luminanceSmoothing={0.42} mipmapBlur />
+          <Noise opacity={0.0025} />
+          <Vignette eskil={false} offset={0.08} darkness={0.2} />
         </EffectComposer>
       </Canvas>
     </main>
