@@ -4,6 +4,7 @@ import { Bloom, EffectComposer, Noise, Vignette } from "@react-three/postprocess
 import { Suspense, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import Scene01 from "./scene/Scene01";
+import CityBackdrop from "./scene/CityBackdrop";
 
 function LoadingOverlay() {
   const { active, progress } = useProgress();
@@ -80,7 +81,10 @@ export default function App() {
       >
         <color attach="background" args={["#07090d"]} />
         <fog attach="fog" args={["#080a0f", 18, 34]} />
-        <Suspense fallback={null}><Scene01 /></Suspense>
+        <Suspense fallback={null}>
+          <CityBackdrop />
+          <Scene01 />
+        </Suspense>
         <LoadingOverlay />
         <CameraRig progressRef={progressRef} pointerRef={pointerRef} />
         <EffectComposer multisampling={0}>
