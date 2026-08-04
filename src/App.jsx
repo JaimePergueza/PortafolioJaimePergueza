@@ -20,23 +20,23 @@ function CameraRig({ progressRef, pointerRef }) {
   useFrame((state, delta) => {
     const p = progressRef.current;
     const pointer = pointerRef.current;
-    const idleX = Math.sin(state.clock.elapsedTime * 0.12) * 0.018;
-    const idleY = Math.sin(state.clock.elapsedTime * 0.09) * 0.012;
+    const idleX = Math.sin(state.clock.elapsedTime * 0.12) * 0.014;
+    const idleY = Math.sin(state.clock.elapsedTime * 0.09) * 0.009;
 
     desired.set(
-      THREE.MathUtils.lerp(-9.2, -6.4, p) + pointer.x * 0.18 + idleX,
-      THREE.MathUtils.lerp(4.1, 3.0, p) + pointer.y * 0.1 + idleY,
-      THREE.MathUtils.lerp(9.6, 6.15, p),
+      THREE.MathUtils.lerp(-6.7, -4.65, p) + pointer.x * 0.14 + idleX,
+      THREE.MathUtils.lerp(2.85, 2.35, p) + pointer.y * 0.08 + idleY,
+      THREE.MathUtils.lerp(7.25, 4.95, p),
     );
 
-    camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.25, delta);
-    camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.25, delta);
-    camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.25, delta);
+    camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.5, delta);
+    camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.5, delta);
+    camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.5, delta);
 
     target.set(
-      THREE.MathUtils.lerp(0.25, 1.4, p),
-      THREE.MathUtils.lerp(1.6, 1.72, p),
-      THREE.MathUtils.lerp(-1.7, -2.25, p),
+      THREE.MathUtils.lerp(0.65, 1.75, p),
+      THREE.MathUtils.lerp(1.55, 1.65, p),
+      THREE.MathUtils.lerp(-2.0, -2.45, p),
     );
     camera.lookAt(target);
   });
@@ -74,13 +74,13 @@ export default function App() {
       </div>
 
       <Canvas
-        camera={{ position: [-9.2, 4.1, 9.6], fov: 42, near: 0.1, far: 70 }}
+        camera={{ position: [-6.7, 2.85, 7.25], fov: 38, near: 0.1, far: 70 }}
         dpr={[1, 1.5]}
-        gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.28 }}
+        gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.34 }}
         shadows
       >
         <color attach="background" args={["#07090d"]} />
-        <fog attach="fog" args={["#080a0f", 18, 34]} />
+        <fog attach="fog" args={["#0b1020", 11, 28]} />
         <Suspense fallback={null}>
           <CityBackdrop />
           <Scene01 />
@@ -88,9 +88,9 @@ export default function App() {
         <LoadingOverlay />
         <CameraRig progressRef={progressRef} pointerRef={pointerRef} />
         <EffectComposer multisampling={0}>
-          <Bloom intensity={0.3} luminanceThreshold={0.76} luminanceSmoothing={0.42} mipmapBlur />
-          <Noise opacity={0.0025} />
-          <Vignette eskil={false} offset={0.08} darkness={0.2} />
+          <Bloom intensity={0.36} luminanceThreshold={0.72} luminanceSmoothing={0.44} mipmapBlur />
+          <Noise opacity={0.0018} />
+          <Vignette eskil={false} offset={0.06} darkness={0.16} />
         </EffectComposer>
       </Canvas>
     </main>
