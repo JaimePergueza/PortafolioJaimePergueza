@@ -1,81 +1,40 @@
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
-import cityBackplate from "../assets/cityBackplate";
-
-function FrameBar({ args, position }) {
-  return (
-    <mesh position={position} renderOrder={4}>
-      <boxGeometry args={args} />
-      <meshStandardMaterial color="#090c11" roughness={0.42} metalness={0.48} />
-    </mesh>
-  );
-}
+import cityBackplate from "../assets/cityBackplateV2";
 
 export default function CityBackdrop() {
   const [texture, setTexture] = useState(null);
-  const glass = useMemo(
-    () =>
-      new THREE.MeshPhysicalMaterial({
-        color: "#8aa7c7",
-        roughness: 0.08,
-        transmission: 0.18,
-        transparent: true,
-        opacity: 0.12,
-        depthWrite: false,
-      }),
-    [],
-  );
+  const haze = useMemo(() => new THREE.MeshBasicMaterial({ color: "#416aa4", transparent: true, opacity: 0.08, depthWrite: false }), []);
 
   useEffect(() => {
     let active = true;
-    const loader = new THREE.TextureLoader();
-
-    loader.load(
-      cityBackplate,
-      (loadedTexture) => {
-        if (!active) {
-          loadedTexture.dispose();
-          return;
-        }
-        loadedTexture.colorSpace = THREE.SRGBColorSpace;
-        loadedTexture.minFilter = THREE.LinearFilter;
-        loadedTexture.magFilter = THREE.LinearFilter;
-        loadedTexture.generateMipmaps = false;
-        loadedTexture.needsUpdate = true;
-        setTexture(loadedTexture);
-      },
-      undefined,
-      (error) => {
-        console.error("No se pudo cargar el fondo de ciudad", error);
-      },
-    );
-
-    return () => {
-      active = false;
+    const image = new Image();
+    image.onload = () => {
+      if (!active) return;
+      const loaded = new THREE.Texture(image);
+      loaded.colorSpace = THREE.SRGBColorSpace;
+      loaded.minFilter = THREE.LinearFilter;
+      loaded.magFilter = THREE.LinearFilter;
+      loaded.generateMipmaps = false;
+      loaded.needsUpdate = true;
+      setTexture(loaded);
     };
+    image.onerror = (error) => console.error("No se pudo cargar el fondo panorámico", error);
+    image.src = cityBackplate;
+    return () => { active = false; };
   }, []);
 
   if (!texture) return null;
 
   return (
-    <group position={[-3.6, 2.75, -4.28]}>
-      <mesh renderOrder={2}>
-        <planeGeometry args={[6.12, 4.56]} />
-        <meshBasicMaterial map={texture} toneMapped={false} depthWrite />
+    <group position={[-3.35, 2.7, -4.47]}>
+      <mesh renderOrder={-5}>
+        <planeGeometry args={[5.86, 4.48]} />
+        <meshBasicMaterial map={texture} toneMapped={false} depthWrite={false} />
       </mesh>
-
-      <mesh position={[0, 0, 0.018]} material={glass} renderOrder={3}>
-        <planeGeometry args={[6.12, 4.56]} />
+      <mesh position={[0, 0, 0.02]} material={haze} renderOrder={-4}>
+        <planeGeometry args={[5.86, 4.48]} />
       </mesh>
-
-      <FrameBar args={[6.38, 0.12, 0.12]} position={[0, 2.34, 0.05]} />
-      <FrameBar args={[6.38, 0.12, 0.12]} position={[0, -2.34, 0.05]} />
-      <FrameBar args={[0.12, 4.68, 0.12]} position={[-3.13, 0, 0.05]} />
-      <FrameBar args={[0.12, 4.68, 0.12]} position={[3.13, 0, 0.05]} />
-      {[-2.03, 0, 2.03].map((x) => (
-        <FrameBar key={x} args={[0.075, 4.56, 0.1]} position={[x, 0, 0.06]} />
-      ))}
-      <FrameBar args={[6.12, 0.075, 0.1]} position={[0, 0, 0.06]} />
     </group>
   );
 }
