@@ -86,7 +86,7 @@ function WeightPlate({ x, thickness, radius }) {
 }
 
 function BenchPress() {
-  const steel="#22262d";
+  const steel = "#22262d";
   return <group position={[-3.45,0,-1.18]}>
     <mesh position={[0,0.055,0]} receiveShadow>
       <boxGeometry args={[4.6,0.1,3.5]}/>
