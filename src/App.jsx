@@ -5,18 +5,19 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import Scene01 from "./scene/Scene01";
 import CityBackdrop from "./scene/CityBackdrop";
+import HelloWorldStage from "./scene/HelloWorldStage";
 import ParticleTextScene from "./scene/ParticleTextScene";
 
 const CAMERA_PRESETS = {
   desktop: {
     fov: 39,
-    monitorFov: 33,
-    particleFov: 42,
+    monitorFov: 32,
+    stageFov: 42,
     studioStart: [-5.15, 2.72, 6.15],
     studioApproach: [-3.25, 2.38, 3.25],
     monitorNear: [0.62, 2.1, -0.25],
     monitorInside: [0.89, 2.02, -1.78],
-    particleCamera: [0, 0.05, 8.2],
+    stageCamera: [0, 0.05, 8.2],
     targetStart: [0.75, 1.55, -2.05],
     targetApproach: [0.98, 1.88, -2.52],
     monitorTarget: [0.98, 2.0, -2.57],
@@ -26,12 +27,12 @@ const CAMERA_PRESETS = {
   tablet: {
     fov: 43,
     monitorFov: 35,
-    particleFov: 44,
+    stageFov: 45,
     studioStart: [-5.0, 2.8, 7.1],
     studioApproach: [-3.5, 2.45, 4.05],
     monitorNear: [0.58, 2.1, 0.05],
     monitorInside: [0.88, 2.02, -1.6],
-    particleCamera: [0, 0.05, 9.5],
+    stageCamera: [0, 0.05, 9.0],
     targetStart: [0.58, 1.58, -2.05],
     targetApproach: [0.96, 1.88, -2.5],
     monitorTarget: [0.98, 2.0, -2.57],
@@ -41,12 +42,12 @@ const CAMERA_PRESETS = {
   mobile: {
     fov: 49,
     monitorFov: 39,
-    particleFov: 48,
+    stageFov: 50,
     studioStart: [-4.7, 2.85, 8.7],
     studioApproach: [-3.0, 2.55, 5.4],
     monitorNear: [0.56, 2.12, 0.55],
     monitorInside: [0.88, 2.03, -1.25],
-    particleCamera: [0, 0.05, 14.2],
+    stageCamera: [0, 0.05, 10.6],
     targetStart: [0.42, 1.58, -2.08],
     targetApproach: [0.92, 1.86, -2.48],
     monitorTarget: [0.98, 2.0, -2.57],
@@ -99,14 +100,14 @@ function useDeviceMode() {
 function LoadingOverlay() {
   const { active, progress } = useProgress();
   if (!active) return null;
-  return <Html center><div className="loading-card"><span>Cargando estudio</span><strong>{Math.round(progress)}%</strong></div></Html>;
+  return <Html center><div className="loading-card"><span>Cargando experiencia</span><strong>{Math.round(progress)}%</strong></div></Html>;
 }
 
 function CameraRig({ progressRef, pointerRef, deviceMode }) {
   const { camera } = useThree();
   const target = useMemo(() => new THREE.Vector3(), []);
   const desired = useMemo(() => new THREE.Vector3(), []);
-  const particleModeRef = useRef(false);
+  const stageModeRef = useRef(false);
   const preset = CAMERA_PRESETS[deviceMode];
 
   useEffect(() => {
@@ -117,57 +118,59 @@ function CameraRig({ progressRef, pointerRef, deviceMode }) {
   useFrame((state, delta) => {
     const p = progressRef.current;
     const pointer = pointerRef.current;
-    const isParticleMode = p >= 0.575;
+    const isStageMode = p >= 0.6;
     let desiredFov = preset.fov;
 
-    if (p < 0.34) {
-      const approach = smoothRange(p, 0, 0.34);
+    if (p < 0.3) {
+      const approach = smoothRange(p, 0, 0.3);
       lerpVector(desired, preset.studioStart, preset.studioApproach, approach);
       lerpVector(target, preset.targetStart, preset.targetApproach, approach);
     } else if (p < 0.5) {
-      const monitorApproach = smoothRange(p, 0.34, 0.5);
+      const monitorApproach = smoothRange(p, 0.3, 0.5);
       lerpVector(desired, preset.studioApproach, preset.monitorNear, monitorApproach);
       lerpVector(target, preset.targetApproach, preset.monitorTarget, monitorApproach);
       desiredFov = THREE.MathUtils.lerp(preset.fov, preset.monitorFov, monitorApproach);
-    } else if (!isParticleMode) {
-      const screenDive = smoothRange(p, 0.5, 0.575);
+    } else if (!isStageMode) {
+      const screenDive = smoothRange(p, 0.5, 0.6);
       lerpVector(desired, preset.monitorNear, preset.monitorInside, screenDive);
       target.set(...preset.monitorTarget);
-      desiredFov = THREE.MathUtils.lerp(preset.monitorFov, preset.monitorFov - 5, screenDive);
+      desiredFov = THREE.MathUtils.lerp(preset.monitorFov, preset.monitorFov - 6, screenDive);
     } else {
-      const particleDrift = smoothRange(p, 0.66, 0.86);
+      const stageDrift = smoothRange(p, 0.7, 0.94);
       desired.set(
-        preset.particleCamera[0],
-        preset.particleCamera[1],
-        preset.particleCamera[2] - particleDrift * (deviceMode === "mobile" ? 0.45 : 0.32),
+        preset.stageCamera[0],
+        preset.stageCamera[1] + Math.sin(state.clock.elapsedTime * 0.13) * (deviceMode === "mobile" ? 0 : 0.018),
+        preset.stageCamera[2] - stageDrift * (deviceMode === "mobile" ? 0.45 : 0.34),
       );
       target.set(0, 0, 0);
-      desiredFov = preset.particleFov;
+      desiredFov = preset.stageFov;
     }
 
-    const studioParallax = 1 - smoothRange(p, 0.2, 0.44);
-    if (!isParticleMode && studioParallax > 0) {
+    const studioParallax = 1 - smoothRange(p, 0.2, 0.47);
+    if (!isStageMode && studioParallax > 0) {
       const idleX = deviceMode === "mobile" ? 0 : Math.sin(state.clock.elapsedTime * 0.12) * 0.014;
       const idleY = deviceMode === "mobile" ? 0 : Math.sin(state.clock.elapsedTime * 0.09) * 0.009;
       desired.x += (pointer.active ? pointer.x * preset.pointerX : 0) * studioParallax + idleX;
       desired.y += (pointer.active ? pointer.y * preset.pointerY : 0) * studioParallax + idleY;
     }
 
-    if (particleModeRef.current !== isParticleMode) {
+    if (stageModeRef.current !== isStageMode) {
       camera.position.copy(desired);
       camera.fov = desiredFov;
       camera.updateProjectionMatrix();
-      particleModeRef.current = isParticleMode;
+      stageModeRef.current = isStageMode;
     }
 
-    camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.5, delta);
-    camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.5, delta);
-    camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.5, delta);
-    const nextFov = THREE.MathUtils.damp(camera.fov, desiredFov, 5, delta);
+    camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.8, delta);
+    camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.8, delta);
+    camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.8, delta);
+
+    const nextFov = THREE.MathUtils.damp(camera.fov, desiredFov, 5.2, delta);
     if (Math.abs(camera.fov - nextFov) > 0.0001) {
       camera.fov = nextFov;
       camera.updateProjectionMatrix();
     }
+
     camera.lookAt(target);
   });
 
@@ -181,16 +184,21 @@ export default function App() {
   const touchYRef = useRef(null);
   const deviceMode = useDeviceMode();
   const isMobile = deviceMode === "mobile";
-  const transitionOpacity = progress < 0.575
-    ? smoothRange(progress, 0.47, 0.555)
-    : 1 - smoothRange(progress, 0.585, 0.66);
-  const storyStage = progress < 0.34
+  const transitionOpacity = Math.min(
+    smoothRange(progress, 0.49, 0.585),
+    1 - smoothRange(progress, 0.615, 0.69),
+  );
+  const storyStage = progress < 0.3
     ? "studio"
-    : progress < 0.575
+    : progress < 0.5
       ? "monitor"
-      : progress < 0.86
-        ? "particles"
-        : "explosion";
+      : progress < 0.6
+        ? "portal"
+        : progress < 0.79
+          ? "hello-world"
+          : progress < 0.94
+            ? "particles"
+            : "explosion";
 
   const setStoryProgress = (value) => {
     const next = THREE.MathUtils.clamp(value, 0, 1);
@@ -202,11 +210,11 @@ export default function App() {
     const handleKeyDown = (event) => {
       if (["ArrowDown", "PageDown", " "].includes(event.key)) {
         event.preventDefault();
-        setStoryProgress(progressRef.current + 0.12);
+        setStoryProgress(progressRef.current + 0.1);
       }
       if (["ArrowUp", "PageUp"].includes(event.key)) {
         event.preventDefault();
-        setStoryProgress(progressRef.current - 0.12);
+        setStoryProgress(progressRef.current - 0.1);
       }
       if (event.key === "Home") setStoryProgress(0);
       if (event.key === "End") setStoryProgress(1);
@@ -222,7 +230,7 @@ export default function App() {
       className={`app-shell is-${deviceMode} stage-${storyStage}`}
       data-story-progress={progress.toFixed(3)}
       data-story-stage={storyStage}
-      onWheel={(event) => setStoryProgress(progressRef.current + event.deltaY * 0.0008)}
+      onWheel={(event) => setStoryProgress(progressRef.current + event.deltaY * 0.00072)}
       onPointerMove={(event) => {
         if (event.pointerType === "touch") return;
         pointerRef.current.active = true;
@@ -250,7 +258,7 @@ export default function App() {
         touchYRef.current = currentY;
         pointerRef.current.x = touch.clientX / window.innerWidth - 0.5;
         pointerRef.current.y = 0.5 - touch.clientY / window.innerHeight;
-        setStoryProgress(progressRef.current + (deltaY / window.innerHeight) * 1.28);
+        setStoryProgress(progressRef.current + (deltaY / window.innerHeight) * 1.12);
       }}
       onTouchEnd={() => {
         touchYRef.current = null;
@@ -262,7 +270,7 @@ export default function App() {
       <div className="scene-transition" style={{ opacity: transitionOpacity }} aria-hidden="true" />
 
       <div className={`scroll-cue${progress > 0.08 ? " is-hidden" : ""}`}>
-        <span>{isMobile ? "Desliza hacia arriba" : "Haz scroll para acercarte"}</span><i />
+        <span>{isMobile ? "Desliza hacia arriba" : "Haz scroll para entrar"}</span><i />
       </div>
 
       {isMobile && (
@@ -279,33 +287,52 @@ export default function App() {
           far: 70,
         }}
         dpr={isMobile ? [1, 1.2] : [1, 1.5]}
-        gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.34 }}
+        gl={{
+          antialias: true,
+          powerPreference: "high-performance",
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.28,
+        }}
         shadows
       >
-        <color attach="background" args={["#07090d"]} />
-        <fog attach="fog" args={["#0b1020", 11, 28]} />
+        <color attach="background" args={["#03050a"]} />
+        <fog attach="fog" args={["#08101c", 12, 30]} />
+
         <Suspense fallback={null}>
-          <group visible={progress < 0.595}>
+          <group visible={progress < 0.625}>
             <CityBackdrop />
             <Scene01 />
           </group>
+
+          <HelloWorldStage
+            deviceMode={deviceMode}
+            progress={progress}
+            progressRef={progressRef}
+          />
+
           <ParticleTextScene
             deviceMode={deviceMode}
             pointerRef={pointerRef}
             progressRef={progressRef}
           />
         </Suspense>
+
         <LoadingOverlay />
         <CameraRig progressRef={progressRef} pointerRef={pointerRef} deviceMode={deviceMode} />
+
         <EffectComposer multisampling={0}>
           <Bloom
-            intensity={progress >= 0.575 ? (isMobile ? 0.48 : 0.66) : (isMobile ? 0.28 : 0.36)}
-            luminanceThreshold={progress >= 0.575 ? 0.44 : 0.72}
-            luminanceSmoothing={0.44}
+            intensity={progress >= 0.6 ? (isMobile ? 0.58 : 0.78) : (isMobile ? 0.28 : 0.36)}
+            luminanceThreshold={progress >= 0.6 ? 0.34 : 0.72}
+            luminanceSmoothing={0.48}
             mipmapBlur
           />
           {!isMobile && <Noise opacity={0.0018} />}
-          <Vignette eskil={false} offset={0.06} darkness={progress >= 0.575 ? 0.3 : (isMobile ? 0.1 : 0.16)} />
+          <Vignette
+            eskil={false}
+            offset={0.05}
+            darkness={progress >= 0.6 ? 0.34 : (isMobile ? 0.1 : 0.16)}
+          />
         </EffectComposer>
       </Canvas>
     </main>
