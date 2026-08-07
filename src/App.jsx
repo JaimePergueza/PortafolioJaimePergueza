@@ -12,12 +12,12 @@ const CAMERA_PRESETS = {
   desktop: {
     fov: 39,
     monitorFov: 32,
-    stageFov: 42,
+    stageFov: 39,
     studioStart: [-5.15, 2.72, 6.15],
     studioApproach: [-3.25, 2.38, 3.25],
     monitorNear: [0.62, 2.1, -0.25],
     monitorInside: [0.89, 2.02, -1.78],
-    stageCamera: [0, 0.05, 8.2],
+    stageCamera: [0, 0.08, 8.75],
     targetStart: [0.75, 1.55, -2.05],
     targetApproach: [0.98, 1.88, -2.52],
     monitorTarget: [0.98, 2.0, -2.57],
@@ -27,12 +27,12 @@ const CAMERA_PRESETS = {
   tablet: {
     fov: 43,
     monitorFov: 35,
-    stageFov: 45,
+    stageFov: 43,
     studioStart: [-5.0, 2.8, 7.1],
     studioApproach: [-3.5, 2.45, 4.05],
     monitorNear: [0.58, 2.1, 0.05],
     monitorInside: [0.88, 2.02, -1.6],
-    stageCamera: [0, 0.05, 9.0],
+    stageCamera: [0, 0.06, 9.45],
     targetStart: [0.58, 1.58, -2.05],
     targetApproach: [0.96, 1.88, -2.5],
     monitorTarget: [0.98, 2.0, -2.57],
@@ -42,12 +42,12 @@ const CAMERA_PRESETS = {
   mobile: {
     fov: 49,
     monitorFov: 39,
-    stageFov: 50,
+    stageFov: 49,
     studioStart: [-4.7, 2.85, 8.7],
     studioApproach: [-3.0, 2.55, 5.4],
     monitorNear: [0.56, 2.12, 0.55],
     monitorInside: [0.88, 2.03, -1.25],
-    stageCamera: [0, 0.05, 10.6],
+    stageCamera: [0, 0.05, 10.9],
     targetStart: [0.42, 1.58, -2.08],
     targetApproach: [0.92, 1.86, -2.48],
     monitorTarget: [0.98, 2.0, -2.57],
@@ -136,13 +136,13 @@ function CameraRig({ progressRef, pointerRef, deviceMode }) {
       target.set(...preset.monitorTarget);
       desiredFov = THREE.MathUtils.lerp(preset.monitorFov, preset.monitorFov - 6, screenDive);
     } else {
-      const stageDrift = smoothRange(p, 0.7, 0.94);
+      const stageDrift = smoothRange(p, 0.72, 0.94);
       desired.set(
         preset.stageCamera[0],
-        preset.stageCamera[1] + Math.sin(state.clock.elapsedTime * 0.13) * (deviceMode === "mobile" ? 0 : 0.018),
-        preset.stageCamera[2] - stageDrift * (deviceMode === "mobile" ? 0.45 : 0.34),
+        preset.stageCamera[1] + Math.sin(state.clock.elapsedTime * 0.13) * (deviceMode === "mobile" ? 0 : 0.014),
+        preset.stageCamera[2] - stageDrift * (deviceMode === "mobile" ? 0.36 : 0.26),
       );
-      target.set(0, 0, 0);
+      target.set(0, -0.03, 0);
       desiredFov = preset.stageFov;
     }
 
@@ -291,12 +291,12 @@ export default function App() {
           antialias: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.28,
+          toneMappingExposure: 1.22,
         }}
         shadows
       >
-        <color attach="background" args={["#03050a"]} />
-        <fog attach="fog" args={["#08101c", 12, 30]} />
+        <color attach="background" args={["#02040a"]} />
+        <fog attach="fog" args={["#07101d", 12, 30]} />
 
         <Suspense fallback={null}>
           <group visible={progress < 0.625}>
@@ -322,16 +322,22 @@ export default function App() {
 
         <EffectComposer multisampling={0}>
           <Bloom
-            intensity={progress >= 0.6 ? (isMobile ? 0.58 : 0.78) : (isMobile ? 0.28 : 0.36)}
-            luminanceThreshold={progress >= 0.6 ? 0.34 : 0.72}
+            intensity={
+              progress >= 0.79
+                ? (isMobile ? 0.52 : 0.64)
+                : progress >= 0.6
+                  ? (isMobile ? 0.34 : 0.43)
+                  : (isMobile ? 0.26 : 0.34)
+            }
+            luminanceThreshold={progress >= 0.79 ? 0.38 : progress >= 0.6 ? 0.50 : 0.72}
             luminanceSmoothing={0.48}
             mipmapBlur
           />
-          {!isMobile && <Noise opacity={0.0018} />}
+          {!isMobile && <Noise opacity={0.0016} />}
           <Vignette
             eskil={false}
             offset={0.05}
-            darkness={progress >= 0.6 ? 0.34 : (isMobile ? 0.1 : 0.16)}
+            darkness={progress >= 0.6 ? 0.26 : (isMobile ? 0.1 : 0.15)}
           />
         </EffectComposer>
       </Canvas>
