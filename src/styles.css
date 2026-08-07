@@ -16,6 +16,18 @@ body {
 canvas { display: block; width: 100% !important; height: 100% !important; }
 button, input, textarea, select { font: inherit; }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .app-shell {
   position: relative;
   width: 100%;
@@ -31,6 +43,14 @@ button, input, textarea, select { font: inherit; }
   -webkit-tap-highlight-color: transparent;
 }
 
+.app-shell.stage-particles {
+  cursor: crosshair;
+}
+
+.app-shell.stage-explosion {
+  cursor: default;
+}
+
 .app-shell::after {
   content: "";
   position: absolute;
@@ -40,6 +60,17 @@ button, input, textarea, select { font: inherit; }
   background:
     linear-gradient(180deg, rgba(2,4,8,.22), transparent 25%, transparent 70%, rgba(2,4,8,.38)),
     radial-gradient(circle at 54% 46%, transparent 48%, rgba(0,0,0,.34) 100%);
+}
+
+.scene-transition {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 51% 48%, rgba(16, 40, 78, .28), transparent 27%),
+    #020307;
+  will-change: opacity;
 }
 
 .loading-card {

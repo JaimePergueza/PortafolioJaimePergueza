@@ -51,7 +51,9 @@ function WindowFrame() {
   );
 }
 
-function Monitor({ position, rotation = [0, 0, 0], code = false }) {
+function Monitor({ position, rotation = [0, 0, 0], variant = "hero" }) {
+  const isHero = variant === "hero";
+
   return (
     <group position={position} rotation={rotation}>
       <RoundedBox args={[2.0, 1.2, 0.08]} radius={0.04} smoothness={3} castShadow>
@@ -59,22 +61,35 @@ function Monitor({ position, rotation = [0, 0, 0], code = false }) {
       </RoundedBox>
       <mesh position={[0, 0, 0.046]}>
         <planeGeometry args={[1.84, 1.04]} />
-        <meshStandardMaterial color="#07111e" emissive="#0a2747" emissiveIntensity={0.82} />
+        <meshStandardMaterial
+          color={isHero ? "#071526" : "#08111d"}
+          emissive={isHero ? "#0d3c72" : "#112a49"}
+          emissiveIntensity={isHero ? 1.35 : 0.9}
+        />
       </mesh>
-      {code ? (
-        <group position={[-0.64, 0.26, 0.06]}>
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <group key={i} position={[0, -i * 0.14, 0]}>
-              <Box args={[0.18, 0.03, 0.01]} color="#bd77ff" castShadow={false} />
-              <Box args={[0.36, 0.03, 0.01]} position={[0.34, 0, 0]} color="#6ccfff" castShadow={false} />
-              <Box args={[0.22, 0.03, 0.01]} position={[0.68, 0, 0]} color="#ffb25f" castShadow={false} />
-            </group>
-          ))}
-        </group>
+      {isHero ? (
+        <>
+          <Text position={[0, 0.12, 0.06]} fontSize={0.23} color="#f7fbff" letterSpacing={-0.035}>
+            Hola Mundo
+          </Text>
+          <Text position={[0, -0.22, 0.06]} fontSize={0.052} color="#75c9ff" letterSpacing={0.08}>
+            SCROLL PARA ENTRAR
+          </Text>
+        </>
       ) : (
         <>
-          <Text position={[0, 0.1, 0.06]} fontSize={0.17} color="#f5f7fb">JAIME PERGUEZA</Text>
-          <Text position={[0, -0.17, 0.06]} fontSize={0.08} color="#69bfff">WEB DEVELOPER</Text>
+          <Text position={[-0.72, 0.34, 0.06]} fontSize={0.055} color="#7086a5" anchorX="left">
+            hello-world.js
+          </Text>
+          <Text position={[-0.72, 0.06, 0.06]} fontSize={0.085} color="#c68aff" anchorX="left">
+            console.log(
+          </Text>
+          <Text position={[-0.47, -0.12, 0.06]} fontSize={0.09} color="#7cd7ff" anchorX="left">
+            &quot;Hola Mundo&quot;
+          </Text>
+          <Text position={[-0.72, -0.3, 0.06]} fontSize={0.085} color="#ffb873" anchorX="left">
+            );
+          </Text>
         </>
       )}
       <Box args={[0.1, 0.44, 0.1]} position={[0, -0.8, 0]} color="#101318" metalness={0.5} />
@@ -101,8 +116,8 @@ function Desk() {
       <RoundedBox args={[5.3, 0.19, 1.55]} radius={0.07} smoothness={4} position={[0, 1.1, 0]} material={wood} castShadow receiveShadow />
       <Box args={[0.88, 1.08, 1.35]} position={[-2.05, 0.55, 0]} color="#15181d" metalness={0.2} />
       <Box args={[0.88, 1.08, 1.35]} position={[2.05, 0.55, 0]} color="#15181d" metalness={0.2} />
-      <Monitor position={[-1.02, 2.0, -0.22]} rotation={[0, 0.07, 0]} />
-      <Monitor position={[1.08, 2.0, -0.22]} rotation={[0, -0.07, 0]} code />
+      <Monitor position={[-1.02, 2.0, -0.22]} rotation={[0, 0.07, 0]} variant="hero" />
+      <Monitor position={[1.08, 2.0, -0.22]} rotation={[0, -0.07, 0]} variant="code" />
       <RoundedBox args={[1.45, 0.05, 0.5]} radius={0.03} smoothness={3} position={[0, 1.27, 0.33]}>
         <meshStandardMaterial color="#101318" roughness={0.42} metalness={0.32} />
       </RoundedBox>
