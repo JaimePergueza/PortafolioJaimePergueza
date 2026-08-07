@@ -1,8 +1,7 @@
-import { Text, useTexture } from "@react-three/drei";
+import { Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import HOLA_MUNDO_STAGE_IMAGE from "../assets/holaMundoStageImage";
 
 function clamp01(value) {
   return THREE.MathUtils.clamp(value, 0, 1);
@@ -13,7 +12,7 @@ function smoothRange(value, start, end) {
   return progress * progress * (3 - 2 * progress);
 }
 
-function Box({ args, position = [0, 0, 0], rotation = [0, 0, 0], color = "#121722", metalness = 0.5, roughness = 0.45 }) {
+function Box({ args, position = [0, 0, 0], rotation = [0, 0, 0], color = "#111621", metalness = 0.6, roughness = 0.38 }) {
   return (
     <mesh position={position} rotation={rotation}>
       <boxGeometry args={args} />
@@ -22,73 +21,100 @@ function Box({ args, position = [0, 0, 0], rotation = [0, 0, 0], color = "#12172
   );
 }
 
-function StageLamp({ x, index, progressRef, deviceMode }) {
-  const beamRef = useRef();
-  const bulbRef = useRef();
-  const pointRef = useRef();
+const BEAM_VERTEX_SHADER = /* glsl */ `
+  varying vec2 vUv;
 
-  useFrame((state) => {
-    const progress = progressRef.current;
-    const reveal = smoothRange(progress, 0.615, 0.7);
-    const particleShift = smoothRange(progress, 0.79, 0.9);
-    const pulse = 0.88 + Math.sin(state.clock.elapsedTime * (1.25 + index * 0.08) + index) * 0.12;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
 
-    if (beamRef.current) {
-      beamRef.current.material.opacity = reveal * (0.035 + index * 0.002) * pulse * (1 - particleShift * 0.25);
-    }
-    if (bulbRef.current) {
-      bulbRef.current.material.opacity = reveal * (0.82 + pulse * 0.14);
-    }
-    if (pointRef.current) {
-      pointRef.current.intensity = reveal * (deviceMode === "mobile" ? 1.4 : 2.2) * pulse;
-    }
-  });
+const BEAM_FRAGMENT_SHADER = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uOpacity;
 
+  varying vec2 vUv;
+
+  void main() {
+    float x = abs(vUv.x - 0.5) * 2.0;
+    float width = mix(0.95, 0.12, vUv.y);
+    float softEdge = 1.0 - smoothstep(width * 0.58, width, x);
+    float core = 1.0 - smoothstep(0.0, max(width * 0.48, 0.06), x);
+    float verticalFade = pow(max(sin(vUv.y * 3.14159265), 0.0), 0.72);
+    float alpha = (softEdge * 0.58 + core * 0.42) * verticalFade * uOpacity;
+
+    gl_FragColor = vec4(uColor * (0.65 + core * 0.48), alpha);
+  }
+`;
+
+const BACKDROP_VERTEX_SHADER = /* glsl */ `
+  varying vec2 vUv;
+
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const BACKDROP_FRAGMENT_SHADER = /* glsl */ `
+  varying vec2 vUv;
+
+  void main() {
+    vec2 uv = vUv;
+    vec3 color = vec3(0.006, 0.009, 0.017);
+
+    vec2 leftDelta = uv - vec2(0.31, 0.30);
+    vec2 rightDelta = uv - vec2(0.70, 0.28);
+    float blueGlow = exp(-13.0 * dot(leftDelta, leftDelta));
+    float violetGlow = exp(-13.5 * dot(rightDelta, rightDelta));
+
+    color += vec3(0.010, 0.055, 0.12) * blueGlow;
+    color += vec3(0.070, 0.016, 0.105) * violetGlow;
+
+    float curtain = sin(uv.x * 76.0) * 0.004 + sin(uv.x * 31.0) * 0.003;
+    color += curtain;
+
+    vec2 centered = uv - 0.5;
+    float vignette = smoothstep(0.22, 0.78, length(centered * vec2(1.05, 0.78)));
+    color *= 1.0 - vignette * 0.62;
+
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+function Backdrop() {
   return (
-    <group position={[x, 3.72, -0.25]}>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.28, 0.34, 0.72, 24]} />
-        <meshStandardMaterial color="#090c12" metalness={0.78} roughness={0.28} />
+    <group position={[0, 0.12, -2.35]}>
+      <mesh>
+        <planeGeometry args={[10.8, 6.2]} />
+        <shaderMaterial vertexShader={BACKDROP_VERTEX_SHADER} fragmentShader={BACKDROP_FRAGMENT_SHADER} />
       </mesh>
-      <mesh ref={bulbRef} position={[0, -0.38, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.2, 28]} />
-        <meshBasicMaterial color="#dff2ff" opacity={0} toneMapped={false} transparent />
-      </mesh>
-      <mesh ref={beamRef} position={[0, -2.25, 0.04]}>
-        <coneGeometry args={[0.72, 4.2, 28, 1, true]} />
-        <meshBasicMaterial
-          blending={THREE.AdditiveBlending}
-          color={index % 2 === 0 ? "#8ccfff" : "#9baaff"}
-          depthWrite={false}
-          opacity={0}
-          side={THREE.DoubleSide}
-          toneMapped={false}
-          transparent
-        />
-      </mesh>
-      <pointLight ref={pointRef} color={index % 2 === 0 ? "#bfe8ff" : "#c8c6ff"} distance={7} intensity={0} decay={2} position={[0, -0.5, 0.85]} />
+      <Box args={[10.95, 0.18, 0.22]} position={[0, 3.06, 0.04]} color="#11151d" metalness={0.72} roughness={0.28} />
+      <Box args={[0.10, 6.05, 0.10]} position={[-5.40, 0, 0.08]} color="#0a0e14" metalness={0.7} roughness={0.32} />
+      <Box args={[0.10, 6.05, 0.10]} position={[5.40, 0, 0.08]} color="#0a0e14" metalness={0.7} roughness={0.32} />
     </group>
   );
 }
 
 function Truss() {
-  const sections = useMemo(() => [-5.1, -3.4, -1.7, 0, 1.7, 3.4, 5.1], []);
+  const sections = useMemo(() => [-5.2, -3.47, -1.73, 0, 1.73, 3.47, 5.2], []);
 
   return (
-    <group position={[0, 4.08, -0.55]}>
-      <Box args={[11.6, 0.12, 0.12]} position={[0, 0.2, 0]} color="#0b0f16" metalness={0.82} roughness={0.25} />
-      <Box args={[11.6, 0.12, 0.12]} position={[0, -0.2, 0]} color="#0b0f16" metalness={0.82} roughness={0.25} />
+    <group position={[0, 4.32, -0.75]}>
+      <Box args={[11.4, 0.085, 0.085]} position={[0, 0.16, 0]} color="#0a0e15" metalness={0.84} roughness={0.22} />
+      <Box args={[11.4, 0.085, 0.085]} position={[0, -0.16, 0]} color="#0a0e15" metalness={0.84} roughness={0.22} />
       {sections.map((x, index) => (
         <group key={x} position={[x, 0, 0]}>
-          <Box args={[0.08, 0.5, 0.08]} color="#111722" metalness={0.8} roughness={0.26} />
+          <Box args={[0.06, 0.42, 0.06]} color="#121823" metalness={0.82} roughness={0.24} />
           {index < sections.length - 1 && (
             <Box
-              args={[1.72, 0.055, 0.055]}
-              position={[0.84, 0, 0]}
-              rotation={[0, 0, index % 2 === 0 ? 0.21 : -0.21]}
-              color="#151b26"
+              args={[1.76, 0.042, 0.042]}
+              position={[0.86, 0, 0]}
+              rotation={[0, 0, index % 2 === 0 ? 0.16 : -0.16]}
+              color="#161d29"
               metalness={0.78}
-              roughness={0.3}
+              roughness={0.28}
             />
           )}
         </group>
@@ -97,131 +123,219 @@ function Truss() {
   );
 }
 
-function SideLight({ side = 1, progressRef }) {
-  const glowRef = useRef();
-  const beamRef = useRef();
+function SoftBeam({ x, index, progressRef }) {
+  const materialRef = useRef();
+  const uniforms = useMemo(
+    () => ({
+      uColor: { value: new THREE.Color(index % 2 === 0 ? "#8bc9ff" : "#a8b6ff") },
+      uOpacity: { value: 0 },
+    }),
+    [index],
+  );
 
-  useFrame(() => {
-    const reveal = smoothRange(progressRef.current, 0.63, 0.72);
-    if (glowRef.current) glowRef.current.material.opacity = reveal * 0.78;
-    if (beamRef.current) beamRef.current.material.opacity = reveal * 0.045;
+  useFrame((state) => {
+    const reveal = smoothRange(progressRef.current, 0.625, 0.71);
+    const particles = smoothRange(progressRef.current, 0.84, 0.93);
+    const pulse = 0.92 + Math.sin(state.clock.elapsedTime * 1.15 + index * 0.7) * 0.08;
+    if (materialRef.current) {
+      materialRef.current.uniforms.uOpacity.value = reveal * (1 - particles * 0.35) * 0.18 * pulse;
+    }
   });
 
   return (
-    <group position={[side * 5.2, -0.35, 0.15]} rotation={[0, 0, side * -0.12]}>
-      <mesh rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.33, 0.42, 0.95, 24]} />
-        <meshStandardMaterial color="#090c12" metalness={0.75} roughness={0.3} />
-      </mesh>
-      <mesh ref={glowRef} position={[-side * 0.52, 0, 0]} rotation={[0, side > 0 ? -Math.PI / 2 : Math.PI / 2, 0]}>
-        <circleGeometry args={[0.27, 28]} />
-        <meshBasicMaterial color={side > 0 ? "#ff79ee" : "#74cfff"} opacity={0} toneMapped={false} transparent />
-      </mesh>
-      <mesh ref={beamRef} position={[-side * 1.75, 0, 0]} rotation={[0, 0, side > 0 ? Math.PI / 2 : -Math.PI / 2]}>
-        <coneGeometry args={[0.95, 3.0, 24, 1, true]} />
-        <meshBasicMaterial
-          blending={THREE.AdditiveBlending}
-          color={side > 0 ? "#a53cff" : "#3d8fff"}
-          depthWrite={false}
-          opacity={0}
-          side={THREE.DoubleSide}
-          transparent
-        />
-      </mesh>
+    <mesh position={[x, 1.05, -0.52]} scale={[1.35, 5.1, 1]}>
+      <planeGeometry args={[1, 1]} />
+      <shaderMaterial
+        ref={materialRef}
+        uniforms={uniforms}
+        vertexShader={BEAM_VERTEX_SHADER}
+        fragmentShader={BEAM_FRAGMENT_SHADER}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+        toneMapped={false}
+        transparent
+      />
+    </mesh>
+  );
+}
+
+function StageLamp({ x, index, progressRef, deviceMode }) {
+  const lensRef = useRef();
+  const lightRef = useRef();
+
+  useFrame((state) => {
+    const reveal = smoothRange(progressRef.current, 0.615, 0.70);
+    const pulse = 0.93 + Math.sin(state.clock.elapsedTime * (1.08 + index * 0.035) + index) * 0.07;
+
+    if (lensRef.current) lensRef.current.material.opacity = reveal * 0.9 * pulse;
+    if (lightRef.current) {
+      lightRef.current.intensity = reveal * (deviceMode === "mobile" ? 12 : 20) * pulse;
+    }
+  });
+
+  return (
+    <group>
+      <group position={[x, 3.82, 0.12]} rotation={[0.12, 0, index % 2 === 0 ? -0.025 : 0.025]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.22, 0.30, 0.62, 24]} />
+          <meshStandardMaterial color="#070a10" metalness={0.82} roughness={0.23} />
+        </mesh>
+        <mesh ref={lensRef} position={[0, -0.33, 0.04]} rotation={[Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.18, 28]} />
+          <meshBasicMaterial color="#eff8ff" opacity={0} toneMapped={false} transparent />
+        </mesh>
+      </group>
+      <spotLight
+        ref={lightRef}
+        position={[x, 3.55, 1.35]}
+        color={index % 2 === 0 ? "#b8dcff" : "#d4d1ff"}
+        intensity={0}
+        angle={0.25}
+        penumbra={0.92}
+        distance={10}
+        decay={2}
+      />
+      <SoftBeam x={x} index={index} progressRef={progressRef} />
+    </group>
+  );
+}
+
+function FloorGlow({ x, color, progressRef }) {
+  const materialRef = useRef();
+
+  useFrame(() => {
+    const reveal = smoothRange(progressRef.current, 0.64, 0.73);
+    if (materialRef.current) materialRef.current.opacity = reveal * 0.12;
+  });
+
+  return (
+    <mesh position={[x, -3.135, 0.4]} rotation={[-Math.PI / 2, 0, 0]} scale={[2.2, 1.1, 1]}>
+      <circleGeometry args={[1, 48]} />
+      <meshBasicMaterial
+        ref={materialRef}
+        blending={THREE.AdditiveBlending}
+        color={color}
+        depthWrite={false}
+        opacity={0}
+        toneMapped={false}
+        transparent
+      />
+    </mesh>
+  );
+}
+
+function LayeredWord({ text, position, fontSize, frontColor, edgeColor, depthColor, opacity }) {
+  const depthLayers = 5;
+
+  return (
+    <group position={position}>
+      <Text
+        position={[0, 0, -0.14]}
+        fontSize={fontSize * 1.025}
+        anchorX="center"
+        anchorY="middle"
+        color={edgeColor}
+        fillOpacity={opacity * 0.16}
+        letterSpacing={-0.055}
+        material-transparent
+        material-toneMapped={false}
+      >
+        {text}
+      </Text>
+
+      {Array.from({ length: depthLayers }, (_, index) => {
+        const depth = depthLayers - index;
+        return (
+          <Text
+            key={`${text}-depth-${index}`}
+            position={[depth * 0.012, -depth * 0.010, -depth * 0.028]}
+            fontSize={fontSize}
+            anchorX="center"
+            anchorY="middle"
+            color={depthColor}
+            fillOpacity={opacity * (0.42 + index * 0.07)}
+            letterSpacing={-0.055}
+            material-transparent
+            material-toneMapped={false}
+          >
+            {text}
+          </Text>
+        );
+      })}
+
+      <Text
+        position={[0, 0, 0.02]}
+        fontSize={fontSize}
+        anchorX="center"
+        anchorY="middle"
+        color={frontColor}
+        fillOpacity={opacity}
+        letterSpacing={-0.055}
+        outlineColor={edgeColor}
+        outlineOpacity={opacity * 0.72}
+        outlineWidth={0.018}
+        material-transparent
+        material-toneMapped={false}
+      >
+        {text}
+      </Text>
     </group>
   );
 }
 
 export default function HelloWorldStage({ deviceMode, progress, progressRef }) {
-  const referenceTexture = useTexture(HOLA_MUNDO_STAGE_IMAGE);
   const stageReveal = smoothRange(progress, 0.605, 0.69);
-  const referenceFade = smoothRange(progress, 0.69, 0.82);
-  const textReveal = smoothRange(progress, 0.67, 0.75);
-  const particleTakeover = smoothRange(progress, 0.79, 0.87);
+  const textReveal = smoothRange(progress, 0.66, 0.735);
+  const particleTakeover = smoothRange(progress, 0.835, 0.905);
   const textOpacity = textReveal * (1 - particleTakeover);
-  const referenceOpacity = stageReveal * THREE.MathUtils.lerp(0.94, 0.12, referenceFade);
-  const stageScale = deviceMode === "mobile" ? 0.84 : deviceMode === "tablet" ? 0.93 : 1;
-
-  useEffect(() => {
-    referenceTexture.colorSpace = THREE.SRGBColorSpace;
-    referenceTexture.anisotropy = 4;
-    referenceTexture.needsUpdate = true;
-  }, [referenceTexture]);
+  const stageScale = deviceMode === "mobile" ? 0.78 : deviceMode === "tablet" ? 0.92 : 1;
+  const lampPositions = deviceMode === "mobile"
+    ? [-3.45, -1.72, 0, 1.72, 3.45]
+    : [-4.2, -2.52, -0.84, 0.84, 2.52, 4.2];
 
   return (
     <group scale={stageScale} visible={progress >= 0.59}>
-      <ambientLight color="#18253d" intensity={stageReveal * 0.9} />
-      <hemisphereLight color="#6a8fc5" groundColor="#06070c" intensity={stageReveal * 0.42} />
+      <ambientLight color="#0c1628" intensity={stageReveal * 0.24} />
+      <hemisphereLight color="#35547d" groundColor="#020307" intensity={stageReveal * 0.24} />
 
-      <mesh position={[0, 0.05, -2.72]}>
-        <planeGeometry args={[11.35, 6.38]} />
-        <meshBasicMaterial
-          map={referenceTexture}
-          opacity={referenceOpacity}
-          toneMapped={false}
-          transparent
-        />
+      <Backdrop />
+
+      <mesh position={[0, -3.18, 0.15]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[15, 10]} />
+        <meshStandardMaterial color="#04060b" metalness={0.46} roughness={0.36} />
       </mesh>
 
-      <mesh position={[0, -3.18, -0.1]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[14, 9]} />
-        <meshStandardMaterial color="#05070d" metalness={0.28} roughness={0.62} />
-      </mesh>
-
-      <mesh position={[0, -3.15, -0.08]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[9, 5]} />
-        <meshBasicMaterial
-          blending={THREE.AdditiveBlending}
-          color="#35255b"
-          opacity={stageReveal * 0.055}
-          transparent
-        />
-      </mesh>
+      <FloorGlow x={-2.1} color="#1b72ff" progressRef={progressRef} />
+      <FloorGlow x={2.05} color="#b236ff" progressRef={progressRef} />
 
       <Truss />
-      {[-4.25, -2.55, -0.85, 0.85, 2.55, 4.25].map((x, index) => (
+      {lampPositions.map((x, index) => (
         <StageLamp key={x} x={x} index={index} progressRef={progressRef} deviceMode={deviceMode} />
       ))}
-      <SideLight side={-1} progressRef={progressRef} />
-      <SideLight side={1} progressRef={progressRef} />
 
-      <group position={[0, -0.03, -0.22]}>
-        <Text
-          position={[0, 1.1, 0]}
-          fontSize={1.85}
-          anchorX="center"
-          anchorY="middle"
-          color="#4ed8ff"
-          fillOpacity={textOpacity}
-          letterSpacing={-0.055}
-          outlineColor="#1978ff"
-          outlineOpacity={textOpacity * 0.72}
-          outlineWidth={0.025}
-          material-transparent
-          material-toneMapped={false}
-        >
-          Hola
-        </Text>
-        <Text
+      <group position={[0, -0.06, 0.04]}>
+        <LayeredWord
+          text="Hola"
+          position={[0, 1.08, 0]}
+          fontSize={deviceMode === "mobile" ? 1.46 : 1.66}
+          frontColor="#73d8ff"
+          edgeColor="#168cff"
+          depthColor="#123a73"
+          opacity={textOpacity}
+        />
+        <LayeredWord
+          text="Mundo"
           position={[0, -1.05, 0]}
-          fontSize={1.9}
-          anchorX="center"
-          anchorY="middle"
-          color="#b659ff"
-          fillOpacity={textOpacity}
-          letterSpacing={-0.055}
-          outlineColor="#ff55ef"
-          outlineOpacity={textOpacity * 0.62}
-          outlineWidth={0.025}
-          material-transparent
-          material-toneMapped={false}
-        >
-          Mundo
-        </Text>
+          fontSize={deviceMode === "mobile" ? 1.48 : 1.72}
+          frontColor="#d06cff"
+          edgeColor="#8f39ff"
+          depthColor="#4a1b70"
+          opacity={textOpacity}
+        />
       </group>
 
-      <pointLight color="#356eff" distance={9} intensity={stageReveal * 2.8} position={[-3.8, -1.4, 1.4]} decay={2} />
-      <pointLight color="#d23cff" distance={9} intensity={stageReveal * 2.5} position={[3.8, -1.5, 1.2]} decay={2} />
+      <pointLight color="#287dff" distance={8} intensity={stageReveal * 3.2} position={[-3.2, -1.55, 1.8]} decay={2} />
+      <pointLight color="#b43cff" distance={8} intensity={stageReveal * 2.7} position={[3.1, -1.45, 1.65]} decay={2} />
     </group>
   );
 }
