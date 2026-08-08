@@ -1,4 +1,3 @@
-import { Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -224,70 +223,8 @@ function FloorGlow({ x, color, progressRef }) {
   );
 }
 
-function LayeredWord({ text, position, fontSize, frontColor, edgeColor, depthColor, opacity }) {
-  const depthLayers = 5;
-
-  return (
-    <group position={position}>
-      <Text
-        position={[0, 0, -0.14]}
-        fontSize={fontSize * 1.025}
-        anchorX="center"
-        anchorY="middle"
-        color={edgeColor}
-        fillOpacity={opacity * 0.16}
-        letterSpacing={-0.055}
-        material-transparent
-        material-toneMapped={false}
-      >
-        {text}
-      </Text>
-
-      {Array.from({ length: depthLayers }, (_, index) => {
-        const depth = depthLayers - index;
-        return (
-          <Text
-            key={`${text}-depth-${index}`}
-            position={[depth * 0.012, -depth * 0.010, -depth * 0.028]}
-            fontSize={fontSize}
-            anchorX="center"
-            anchorY="middle"
-            color={depthColor}
-            fillOpacity={opacity * (0.42 + index * 0.07)}
-            letterSpacing={-0.055}
-            material-transparent
-            material-toneMapped={false}
-          >
-            {text}
-          </Text>
-        );
-      })}
-
-      <Text
-        position={[0, 0, 0.02]}
-        fontSize={fontSize}
-        anchorX="center"
-        anchorY="middle"
-        color={frontColor}
-        fillOpacity={opacity}
-        letterSpacing={-0.055}
-        outlineColor={edgeColor}
-        outlineOpacity={opacity * 0.72}
-        outlineWidth={0.018}
-        material-transparent
-        material-toneMapped={false}
-      >
-        {text}
-      </Text>
-    </group>
-  );
-}
-
 export default function HelloWorldStage({ deviceMode, progress, progressRef }) {
   const stageReveal = smoothRange(progress, 0.605, 0.69);
-  const textReveal = smoothRange(progress, 0.66, 0.735);
-  const particleTakeover = smoothRange(progress, 0.835, 0.905);
-  const textOpacity = textReveal * (1 - particleTakeover);
   const stageScale = deviceMode === "mobile" ? 0.78 : deviceMode === "tablet" ? 0.92 : 1;
   const lampPositions = deviceMode === "mobile"
     ? [-3.45, -1.72, 0, 1.72, 3.45]
@@ -312,27 +249,6 @@ export default function HelloWorldStage({ deviceMode, progress, progressRef }) {
       {lampPositions.map((x, index) => (
         <StageLamp key={x} x={x} index={index} progressRef={progressRef} deviceMode={deviceMode} />
       ))}
-
-      <group position={[0, -0.06, 0.04]}>
-        <LayeredWord
-          text="Hola"
-          position={[0, 1.08, 0]}
-          fontSize={deviceMode === "mobile" ? 1.46 : 1.66}
-          frontColor="#73d8ff"
-          edgeColor="#168cff"
-          depthColor="#123a73"
-          opacity={textOpacity}
-        />
-        <LayeredWord
-          text="Mundo"
-          position={[0, -1.05, 0]}
-          fontSize={deviceMode === "mobile" ? 1.48 : 1.72}
-          frontColor="#d06cff"
-          edgeColor="#8f39ff"
-          depthColor="#4a1b70"
-          opacity={textOpacity}
-        />
-      </group>
 
       <pointLight color="#287dff" distance={8} intensity={stageReveal * 3.2} position={[-3.2, -1.55, 1.8]} decay={2} />
       <pointLight color="#b43cff" distance={8} intensity={stageReveal * 2.7} position={[3.1, -1.45, 1.65]} decay={2} />
