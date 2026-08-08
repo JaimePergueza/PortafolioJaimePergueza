@@ -1,51 +1,204 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html, useProgress } from "@react-three/drei";
 import { Bloom, EffectComposer, Noise, Vignette } from "@react-three/postprocessing";
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import Scene01 from "./scene/Scene01";
+import CityBackdrop from "./scene/CityBackdrop";
+import HelloWorldStage from "./scene/HelloWorldStage";
+import ParticleTextScene from "./scene/ParticleTextScene";
+
+const CAMERA_PRESETS = {
+  desktop: {
+    fov: 39,
+    monitorFov: 32,
+    stageFov: 39,
+    studioStart: [-5.15, 2.72, 6.15],
+    studioApproach: [-3.25, 2.38, 3.25],
+    monitorNear: [0.62, 2.1, -0.25],
+    monitorInside: [0.89, 2.02, -1.78],
+    stageCamera: [0, 0.08, 8.75],
+    targetStart: [0.75, 1.55, -2.05],
+    targetApproach: [0.98, 1.88, -2.52],
+    monitorTarget: [0.98, 2.0, -2.57],
+    pointerX: 0.14,
+    pointerY: 0.08,
+  },
+  tablet: {
+    fov: 43,
+    monitorFov: 35,
+    stageFov: 43,
+    studioStart: [-5.0, 2.8, 7.1],
+    studioApproach: [-3.5, 2.45, 4.05],
+    monitorNear: [0.58, 2.1, 0.05],
+    monitorInside: [0.88, 2.02, -1.6],
+    stageCamera: [0, 0.06, 9.45],
+    targetStart: [0.58, 1.58, -2.05],
+    targetApproach: [0.96, 1.88, -2.5],
+    monitorTarget: [0.98, 2.0, -2.57],
+    pointerX: 0.09,
+    pointerY: 0.055,
+  },
+  mobile: {
+    fov: 49,
+    monitorFov: 39,
+    stageFov: 49,
+    studioStart: [-4.7, 2.85, 8.7],
+    studioApproach: [-3.0, 2.55, 5.4],
+    monitorNear: [0.56, 2.12, 0.55],
+    monitorInside: [0.88, 2.03, -1.25],
+    stageCamera: [0, 0.05, 10.9],
+    targetStart: [0.42, 1.58, -2.08],
+    targetApproach: [0.92, 1.86, -2.48],
+    monitorTarget: [0.98, 2.0, -2.57],
+    pointerX: 0,
+    pointerY: 0,
+  },
+};
+
+function clamp01(value) {
+  return THREE.MathUtils.clamp(value, 0, 1);
+}
+
+function smoothRange(value, start, end) {
+  const progress = clamp01((value - start) / (end - start));
+  return progress * progress * (3 - 2 * progress);
+}
+
+function lerpVector(output, start, end, progress) {
+  output.set(
+    THREE.MathUtils.lerp(start[0], end[0], progress),
+    THREE.MathUtils.lerp(start[1], end[1], progress),
+    THREE.MathUtils.lerp(start[2], end[2], progress),
+  );
+}
+
+function getDeviceMode() {
+  if (typeof window === "undefined") return "desktop";
+  const width = window.innerWidth;
+  if (width <= 720) return "mobile";
+  if (width <= 1100) return "tablet";
+  return "desktop";
+}
+
+function useDeviceMode() {
+  const [mode, setMode] = useState(getDeviceMode);
+
+  useEffect(() => {
+    const updateMode = () => setMode(getDeviceMode());
+    window.addEventListener("resize", updateMode);
+    window.addEventListener("orientationchange", updateMode);
+    return () => {
+      window.removeEventListener("resize", updateMode);
+      window.removeEventListener("orientationchange", updateMode);
+    };
+  }, []);
+
+  return mode;
+}
 
 function LoadingOverlay() {
   const { active, progress } = useProgress();
   if (!active) return null;
-  return <Html center><div className="loading-card"><span>Cargando estudio</span><strong>{Math.round(progress)}%</strong></div></Html>;
+  return <Html center><div className="loading-card"><span>Cargando experiencia</span><strong>{Math.round(progress)}%</strong></div></Html>;
 }
 
-function CameraRig({ progressRef, pointerRef }) {
+function CameraRig({ progressRef, pointerRef, deviceMode }) {
   const { camera } = useThree();
   const target = useMemo(() => new THREE.Vector3(), []);
   const desired = useMemo(() => new THREE.Vector3(), []);
+  const stageModeRef = useRef(false);
+  const preset = CAMERA_PRESETS[deviceMode];
+
+  useEffect(() => {
+    camera.fov = preset.fov;
+    camera.updateProjectionMatrix();
+  }, [camera, preset.fov]);
 
   useFrame((state, delta) => {
     const p = progressRef.current;
     const pointer = pointerRef.current;
-    const idleX = Math.sin(state.clock.elapsedTime * 0.12) * 0.035;
-    const idleY = Math.sin(state.clock.elapsedTime * 0.09) * 0.02;
+    const isStageMode = p >= 0.6;
+    let desiredFov = preset.fov;
 
-    desired.set(
-      THREE.MathUtils.lerp(8.6, 6.25, p) + pointer.x * 0.3 + idleX,
-      THREE.MathUtils.lerp(4.45, 3.05, p) + pointer.y * 0.18 + idleY,
-      THREE.MathUtils.lerp(8.9, 6.2, p),
-    );
+    if (p < 0.3) {
+      const approach = smoothRange(p, 0, 0.3);
+      lerpVector(desired, preset.studioStart, preset.studioApproach, approach);
+      lerpVector(target, preset.targetStart, preset.targetApproach, approach);
+    } else if (p < 0.5) {
+      const monitorApproach = smoothRange(p, 0.3, 0.5);
+      lerpVector(desired, preset.studioApproach, preset.monitorNear, monitorApproach);
+      lerpVector(target, preset.targetApproach, preset.monitorTarget, monitorApproach);
+      desiredFov = THREE.MathUtils.lerp(preset.fov, preset.monitorFov, monitorApproach);
+    } else if (!isStageMode) {
+      const screenDive = smoothRange(p, 0.5, 0.6);
+      lerpVector(desired, preset.monitorNear, preset.monitorInside, screenDive);
+      target.set(...preset.monitorTarget);
+      desiredFov = THREE.MathUtils.lerp(preset.monitorFov, preset.monitorFov - 6, screenDive);
+    } else {
+      const stageDrift = smoothRange(p, 0.72, 0.94);
+      desired.set(
+        preset.stageCamera[0],
+        preset.stageCamera[1] + Math.sin(state.clock.elapsedTime * 0.13) * (deviceMode === "mobile" ? 0 : 0.014),
+        preset.stageCamera[2] - stageDrift * (deviceMode === "mobile" ? 0.36 : 0.26),
+      );
+      target.set(0, -0.03, 0);
+      desiredFov = preset.stageFov;
+    }
+
+    const studioParallax = 1 - smoothRange(p, 0.2, 0.47);
+    if (!isStageMode && studioParallax > 0) {
+      const idleX = deviceMode === "mobile" ? 0 : Math.sin(state.clock.elapsedTime * 0.12) * 0.014;
+      const idleY = deviceMode === "mobile" ? 0 : Math.sin(state.clock.elapsedTime * 0.09) * 0.009;
+      desired.x += (pointer.active ? pointer.x * preset.pointerX : 0) * studioParallax + idleX;
+      desired.y += (pointer.active ? pointer.y * preset.pointerY : 0) * studioParallax + idleY;
+    }
+
+    if (stageModeRef.current !== isStageMode) {
+      camera.position.copy(desired);
+      camera.fov = desiredFov;
+      camera.updateProjectionMatrix();
+      stageModeRef.current = isStageMode;
+    }
 
     camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.8, delta);
     camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.8, delta);
     camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.8, delta);
 
-    target.set(
-      THREE.MathUtils.lerp(0.2, 0.95, p),
-      THREE.MathUtils.lerp(1.7, 1.65, p),
-      THREE.MathUtils.lerp(-1.0, -1.45, p),
-    );
+    const nextFov = THREE.MathUtils.damp(camera.fov, desiredFov, 5.2, delta);
+    if (Math.abs(camera.fov - nextFov) > 0.0001) {
+      camera.fov = nextFov;
+      camera.updateProjectionMatrix();
+    }
+
     camera.lookAt(target);
   });
+
   return null;
 }
 
 export default function App() {
   const [progress, setProgress] = useState(0);
   const progressRef = useRef(0);
-  const pointerRef = useRef({ x: 0, y: 0 });
+  const pointerRef = useRef({ active: false, x: 0, y: 0 });
+  const touchYRef = useRef(null);
+  const deviceMode = useDeviceMode();
+  const isMobile = deviceMode === "mobile";
+  const transitionOpacity = Math.min(
+    smoothRange(progress, 0.49, 0.585),
+    1 - smoothRange(progress, 0.615, 0.69),
+  );
+  const storyStage = progress < 0.3
+    ? "studio"
+    : progress < 0.5
+      ? "monitor"
+      : progress < 0.6
+        ? "portal"
+        : progress < 0.79
+          ? "hello-world"
+          : progress < 0.94
+            ? "particles"
+            : "explosion";
 
   const setStoryProgress = (value) => {
     const next = THREE.MathUtils.clamp(value, 0, 1);
@@ -53,39 +206,139 @@ export default function App() {
     setProgress(next);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (["ArrowDown", "PageDown", " "].includes(event.key)) {
+        event.preventDefault();
+        setStoryProgress(progressRef.current + 0.1);
+      }
+      if (["ArrowUp", "PageUp"].includes(event.key)) {
+        event.preventDefault();
+        setStoryProgress(progressRef.current - 0.1);
+      }
+      if (event.key === "Home") setStoryProgress(0);
+      if (event.key === "End") setStoryProgress(1);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
     <main
-      className="app-shell"
-      onWheel={(event) => setStoryProgress(progressRef.current + event.deltaY * 0.0008)}
+      aria-label="Introducción interactiva del portafolio de Jaime Pergueza"
+      className={`app-shell is-${deviceMode} stage-${storyStage}`}
+      data-story-progress={progress.toFixed(3)}
+      data-story-stage={storyStage}
+      onWheel={(event) => setStoryProgress(progressRef.current + event.deltaY * 0.00072)}
       onPointerMove={(event) => {
+        if (event.pointerType === "touch") return;
+        pointerRef.current.active = true;
         pointerRef.current.x = event.clientX / window.innerWidth - 0.5;
         pointerRef.current.y = 0.5 - event.clientY / window.innerHeight;
       }}
+      onPointerLeave={() => {
+        pointerRef.current.active = false;
+        pointerRef.current.x = 0;
+        pointerRef.current.y = 0;
+      }}
+      onTouchStart={(event) => {
+        const touch = event.touches[0];
+        touchYRef.current = touch?.clientY ?? null;
+        if (!touch) return;
+        pointerRef.current.active = true;
+        pointerRef.current.x = touch.clientX / window.innerWidth - 0.5;
+        pointerRef.current.y = 0.5 - touch.clientY / window.innerHeight;
+      }}
+      onTouchMove={(event) => {
+        const touch = event.touches[0];
+        const currentY = touch?.clientY;
+        if (currentY == null || touchYRef.current == null) return;
+        const deltaY = touchYRef.current - currentY;
+        touchYRef.current = currentY;
+        pointerRef.current.x = touch.clientX / window.innerWidth - 0.5;
+        pointerRef.current.y = 0.5 - touch.clientY / window.innerHeight;
+        setStoryProgress(progressRef.current + (deltaY / window.innerHeight) * 1.12);
+      }}
+      onTouchEnd={() => {
+        touchYRef.current = null;
+        pointerRef.current.active = false;
+      }}
     >
-      <div className={`intro-copy${progress > 0.55 ? " is-visible" : ""}`}>
-        <code>print(&quot;Hola Mundo&quot;)</code>
-        <span>Hola Mundo</span>
-      </div>
+      <h1 className="sr-only">Hola Mundo — Portafolio de Jaime Pergueza</h1>
+
+      <div className="scene-transition" style={{ opacity: transitionOpacity }} aria-hidden="true" />
 
       <div className={`scroll-cue${progress > 0.08 ? " is-hidden" : ""}`}>
-        <span>Desliza para entrar</span><i />
+        <span>{isMobile ? "Desliza hacia arriba" : "Haz scroll para entrar"}</span><i />
       </div>
 
+      {isMobile && (
+        <div className="mobile-progress" aria-hidden="true">
+          <span style={{ transform: `scaleY(${Math.max(progress, 0.035)})` }} />
+        </div>
+      )}
+
       <Canvas
-        camera={{ position: [8.6, 4.45, 8.9], fov: 39, near: 0.1, far: 60 }}
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping }}
+        camera={{
+          position: CAMERA_PRESETS[deviceMode].studioStart,
+          fov: CAMERA_PRESETS[deviceMode].fov,
+          near: 0.1,
+          far: 70,
+        }}
+        dpr={isMobile ? [1, 1.2] : [1, 1.5]}
+        gl={{
+          antialias: true,
+          powerPreference: "high-performance",
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.22,
+        }}
         shadows
       >
-        <color attach="background" args={["#07090d"]} />
-        <fog attach="fog" args={["#090b10", 12, 25]} />
-        <Suspense fallback={null}><Scene01 /></Suspense>
+        <color attach="background" args={["#02040a"]} />
+        <fog attach="fog" args={["#07101d", 12, 30]} />
+
+        <Suspense fallback={null}>
+          <group visible={progress < 0.625}>
+            <CityBackdrop />
+            <Scene01 />
+          </group>
+
+          <HelloWorldStage
+            deviceMode={deviceMode}
+            progress={progress}
+            progressRef={progressRef}
+          />
+
+          <ParticleTextScene
+            deviceMode={deviceMode}
+            pointerRef={pointerRef}
+            progressRef={progressRef}
+          />
+        </Suspense>
+
         <LoadingOverlay />
-        <CameraRig progressRef={progressRef} pointerRef={pointerRef} />
+        <CameraRig progressRef={progressRef} pointerRef={pointerRef} deviceMode={deviceMode} />
+
         <EffectComposer multisampling={0}>
-          <Bloom intensity={0.48} luminanceThreshold={0.62} luminanceSmoothing={0.35} mipmapBlur />
-          <Noise opacity={0.008} />
-          <Vignette eskil={false} offset={0.18} darkness={0.42} />
+          <Bloom
+            intensity={
+              progress >= 0.79
+                ? (isMobile ? 0.52 : 0.64)
+                : progress >= 0.6
+                  ? (isMobile ? 0.34 : 0.43)
+                  : (isMobile ? 0.26 : 0.34)
+            }
+            luminanceThreshold={progress >= 0.79 ? 0.38 : progress >= 0.6 ? 0.50 : 0.72}
+            luminanceSmoothing={0.48}
+            mipmapBlur
+          />
+          {!isMobile && <Noise opacity={0.0016} />}
+          <Vignette
+            eskil={false}
+            offset={0.05}
+            darkness={progress >= 0.6 ? 0.26 : (isMobile ? 0.1 : 0.15)}
+          />
         </EffectComposer>
       </Canvas>
     </main>
