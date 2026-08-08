@@ -181,8 +181,6 @@ export default function ParticleTextScene({ deviceMode, pointerRef, progressRef 
   const dustGeometry = useMemo(() => createDustGeometry(deviceMode), [deviceMode]);
   const materialRef = useRef();
   const dustRef = useRef();
-  const glowRef = useRef();
-  const glowHaloRef = useRef();
   const glowBeamRef = useRef();
   const pointLightRef = useRef();
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
@@ -209,8 +207,6 @@ export default function ParticleTextScene({ deviceMode, pointerRef, progressRef 
 
     if (progress < 0.755) {
       if (materialRef.current) materialRef.current.uniforms.uOpacity.value = 0;
-      if (glowRef.current) glowRef.current.material.opacity = 0;
-      if (glowHaloRef.current) glowHaloRef.current.material.opacity = 0;
       if (glowBeamRef.current) glowBeamRef.current.material.opacity = 0;
       if (pointLightRef.current) pointLightRef.current.intensity = 0;
       if (dustRef.current) dustRef.current.material.opacity = 0;
@@ -281,18 +277,6 @@ export default function ParticleTextScene({ deviceMode, pointerRef, progressRef 
     const lightY = Math.sin(lightJourney * Math.PI) * 0.22;
     const lightVisibility = opacity * (1 - explosionProgress);
 
-    if (glowRef.current) {
-      glowRef.current.position.set(lightX, lightY, -0.72);
-      glowRef.current.scale.setScalar(0.74 + Math.sin(state.clock.elapsedTime * 2.5) * 0.08);
-      glowRef.current.material.opacity = lightVisibility * 0.92;
-    }
-
-    if (glowHaloRef.current) {
-      glowHaloRef.current.position.set(lightX, lightY, -0.86);
-      glowHaloRef.current.scale.setScalar(1.45 + Math.sin(state.clock.elapsedTime * 1.5) * 0.14);
-      glowHaloRef.current.material.opacity = lightVisibility * 0.16;
-    }
-
     if (glowBeamRef.current) {
       glowBeamRef.current.position.x = lightX;
       glowBeamRef.current.material.opacity = lightVisibility * 0.045;
@@ -333,16 +317,6 @@ export default function ParticleTextScene({ deviceMode, pointerRef, progressRef 
           side={THREE.DoubleSide}
           transparent
         />
-      </mesh>
-
-      <mesh ref={glowHaloRef} position={[-4.35, 0, -0.86]}>
-        <sphereGeometry args={[1.0, 24, 24]} />
-        <meshBasicMaterial color="#4e69df" depthWrite={false} opacity={0} toneMapped={false} transparent />
-      </mesh>
-
-      <mesh ref={glowRef} position={[-4.35, 0, -0.72]}>
-        <sphereGeometry args={[0.19, 24, 24]} />
-        <meshBasicMaterial color="#d6ecff" depthWrite={false} opacity={0} toneMapped={false} transparent />
       </mesh>
 
       <pointLight ref={pointLightRef} color="#78a8ff" distance={9} intensity={0} decay={2} />
