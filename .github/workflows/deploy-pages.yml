@@ -3,7 +3,7 @@ name: Deploy portfolio preview to GitHub Pages
 on:
   push:
     branches:
-      - feature/scene-01-hola-mundo
+      - main
   workflow_dispatch:
 
 permissions:
