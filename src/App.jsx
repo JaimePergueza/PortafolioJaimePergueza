@@ -1,93 +1,212 @@
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html, useProgress } from "@react-three/drei";
-import { Bloom, EffectComposer, Noise, Vignette } from "@react-three/postprocessing";
-import { Suspense, useMemo, useRef, useState } from "react";
-import * as THREE from "three";
-import Scene01 from "./scene/Scene01";
+import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import { Html, useGLTF, useProgress } from "@react-three/drei";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
+import { ACESFilmicToneMapping, Box3, Color, MathUtils, Object3D, PlaneGeometry, Vector3 } from "three";
+import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
+import { Reflector } from "three/addons/objects/Reflector.js";
+import { animateScreens } from "./animatedScreens";
+import { assembleScene } from "./assembly";
+import { animatePlants } from "./plantMotion";
+import TypingCharacter from "./TypingCharacter";
 
-function LoadingOverlay() {
-  const { active, progress } = useProgress();
-  if (!active) return null;
-  return <Html center><div className="loading-card"><span>Cargando estudio</span><strong>{Math.round(progress)}%</strong></div></Html>;
+RectAreaLightUniformsLib.init();
+
+const modelUrl = `${import.meta.env.BASE_URL}models/MiZona_estudio.glb`;
+
+const cameraSettings = {
+  position: [-1.9, 2.4, 0.95],
+  target: [0.65, 1.25, -2.7],
+  horizontalFov: 72,
+  maxVerticalFov: 64,
+};
+
+function Scenario({ assemblyRun, onReady }) {
+  const { scene } = useGLTF(modelUrl);
+  const invalidate = useThree((state) => state.invalidate);
+  const camera = useThree((state) => state.camera);
+  const viewport = useThree((state) => state.size);
+  const assembling = useRef(true);
+  const [assembled, setAssembled] = useState(false);
+
+  useEffect(() => animateScreens(scene, invalidate), [scene, invalidate]);
+  useEffect(() => {
+    if (assembled) return animatePlants(scene, invalidate);
+  }, [scene, invalidate, assembled]);
+
+  useLayoutEffect(() => {
+    scene.updateMatrixWorld(true);
+    scene.traverse((object) => {
+      if (/^Personaje_Rig/i.test(object.name)) object.visible = false;
+      if (object.isMesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        materials.forEach((material) => {
+          if (/LED|RGB/i.test(material.name)) material.emissiveIntensity = 3;
+        });
+      }
+    });
+    if (!assembling.current) camera.position.fromArray(cameraSettings.position);
+    const aspect = viewport.width / viewport.height;
+    const horizontalLimit = MathUtils.radToDeg(2 * Math.atan(Math.tan(MathUtils.degToRad(cameraSettings.horizontalFov / 2)) / aspect));
+    camera.fov = Math.min(cameraSettings.maxVerticalFov, horizontalLimit);
+    camera.near = 0.05;
+    camera.far = 100;
+    if (!assembling.current) camera.lookAt(...cameraSettings.target);
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld(true);
+    invalidate();
+  }, [scene, invalidate, camera, viewport.width, viewport.height]);
+
+  useLayoutEffect(() => {
+    assembling.current = true;
+    setAssembled(false);
+    return assembleScene({
+      scene,
+      camera,
+      cameraSettings,
+      invalidate,
+      onComplete: () => {
+        assembling.current = false;
+        setAssembled(true);
+        onReady();
+      },
+    });
+  }, [scene, camera, invalidate, assemblyRun, onReady]);
+
+  return (
+    <>
+      <primitive object={scene} />
+      <Suspense fallback={null}>
+        <TypingCharacter active={assembled} laboratory={scene} />
+      </Suspense>
+      {assembled && <Mirror scene={scene} />}
+      <StudioLighting />
+    </>
+  );
 }
 
-function CameraRig({ progressRef, pointerRef }) {
-  const { camera } = useThree();
-  const target = useMemo(() => new THREE.Vector3(), []);
-  const desired = useMemo(() => new THREE.Vector3(), []);
+function Mirror({ scene }) {
+  const group = useRef();
+  const invalidate = useThree((state) => state.invalidate);
+  const surface = useMemo(() => {
+    scene.updateMatrixWorld(true);
+    let mirror;
+    scene.traverse((object) => {
+      if (!object.isMesh) return;
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      if (/Espejo.*superficie/i.test(object.name) || materials.some((material) => /Espejo pulido/i.test(material.name))) mirror = object;
+    });
+    if (!mirror) return null;
+    const bounds = new Box3().setFromObject(mirror);
+    const center = bounds.getCenter(new Vector3());
+    const size = bounds.getSize(new Vector3());
+    return { mesh: mirror, position: [center.x, center.y, bounds.max.z + 0.002], width: size.x, height: size.y };
+  }, [scene]);
 
-  useFrame((state, delta) => {
-    const p = progressRef.current;
-    const pointer = pointerRef.current;
-    const idleX = Math.sin(state.clock.elapsedTime * 0.12) * 0.035;
-    const idleY = Math.sin(state.clock.elapsedTime * 0.09) * 0.02;
+  useLayoutEffect(() => {
+    if (!surface) return;
+    const geometry = new PlaneGeometry(surface.width, surface.height);
+    const reflector = new Reflector(geometry, {
+      color: new Color(0.5, 0.5, 0.5),
+      textureWidth: 1024,
+      textureHeight: 2048,
+      clipBias: 0,
+      multisample: 2,
+    });
+    reflector.position.fromArray(surface.position);
+    reflector.name = "Espejo_reflejo";
+    const originalVisibility = surface.mesh.visible;
+    surface.mesh.visible = false;
+    const parent = group.current;
+    parent.add(reflector);
+    reflector.updateMatrixWorld(true);
+    invalidate();
+    return () => {
+      surface.mesh.visible = originalVisibility;
+      parent.remove(reflector);
+      reflector.dispose();
+      geometry.dispose();
+    };
+  }, [surface, invalidate]);
 
-    desired.set(
-      THREE.MathUtils.lerp(8.6, 6.25, p) + pointer.x * 0.3 + idleX,
-      THREE.MathUtils.lerp(4.45, 3.05, p) + pointer.y * 0.18 + idleY,
-      THREE.MathUtils.lerp(8.9, 6.2, p),
-    );
+  return <group ref={group} />;
+}
 
-    camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.8, delta);
-    camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.8, delta);
-    camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.8, delta);
+function StudioLighting() {
+  const target = new Object3D();
+  target.position.set(0, 0.5, -2);
+  target.updateMatrixWorld(true);
 
-    target.set(
-      THREE.MathUtils.lerp(0.2, 0.95, p),
-      THREE.MathUtils.lerp(1.7, 1.65, p),
-      THREE.MathUtils.lerp(-1.0, -1.45, p),
-    );
-    camera.lookAt(target);
-  });
-  return null;
+  return (
+    <group>
+      <hemisphereLight args={["#9eb5d3", "#473022", 0.22]} />
+      <spotLight
+        position={[0.3, 2.88, -1.8]}
+        intensity={38}
+        angle={1.15}
+        penumbra={0.85}
+        decay={2}
+        color="#ffd3a0"
+        target={target}
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-near={0.1}
+        shadow-camera-far={12}
+        shadow-normalBias={0.015}
+        shadow-bias={-0.0001}
+      />
+      <rectAreaLight position={[-1.15, 2.85, -3.4]} rotation={[0.3, Math.PI, 0]} width={2.1} height={0.18} intensity={9} color="#58e6e3" />
+      <rectAreaLight position={[0.05, 1.5, -3.4]} rotation={[0, Math.PI, 0]} width={0.14} height={2.7} intensity={7} color="#58e6e3" />
+      <rectAreaLight position={[-0.85, 1.55, -3.48]} rotation={[0, Math.PI, 0]} width={1.25} height={2.1} intensity={4} color="#ffb65f" />
+      <rectAreaLight position={[1.15, 2.3, -3.25]} rotation={[0.7, Math.PI, 0]} width={1.9} height={0.15} intensity={12} color="#ffc078" />
+      <rectAreaLight position={[1.15, 1.77, -3.25]} rotation={[0.6, Math.PI, 0]} width={1.9} height={0.12} intensity={8} color="#ffc078" />
+      <rectAreaLight position={[2.45, 1.6, -2.2]} rotation={[0, Math.PI / 2, 0]} width={2.4} height={2.3} intensity={1.5} color="#8eaee8" />
+      <pointLight position={[1.1, 1.05, -2.95]} intensity={0.6} distance={1.8} color="#7adce8" />
+    </group>
+  );
+}
+
+function Loading() {
+  const { progress } = useProgress();
+  return <Html center><p className="status" role="status">Cargando escenario · {Math.round(progress)}%</p></Html>;
+}
+
+class SceneErrorBoundary extends Component {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    if (this.state.failed) {
+      return <p className="scene-error" role="alert">No se pudo cargar el escenario. Recarga la página para intentarlo de nuevo.</p>;
+    }
+    return this.props.children;
+  }
 }
 
 export default function App() {
-  const [progress, setProgress] = useState(0);
-  const progressRef = useRef(0);
-  const pointerRef = useRef({ x: 0, y: 0 });
-
-  const setStoryProgress = (value) => {
-    const next = THREE.MathUtils.clamp(value, 0, 1);
-    progressRef.current = next;
-    setProgress(next);
-  };
+  const [assemblyRun, setAssemblyRun] = useState(0);
+  const [ready, setReady] = useState(false);
+  const onReady = useMemo(() => () => setReady(true), []);
 
   return (
-    <main
-      className="app-shell"
-      onWheel={(event) => setStoryProgress(progressRef.current + event.deltaY * 0.0008)}
-      onPointerMove={(event) => {
-        pointerRef.current.x = event.clientX / window.innerWidth - 0.5;
-        pointerRef.current.y = 0.5 - event.clientY / window.innerHeight;
-      }}
-    >
-      <div className={`intro-copy${progress > 0.55 ? " is-visible" : ""}`}>
-        <code>print(&quot;Hola Mundo&quot;)</code>
-        <span>Hola Mundo</span>
-      </div>
-
-      <div className={`scroll-cue${progress > 0.08 ? " is-hidden" : ""}`}>
-        <span>Desliza para entrar</span><i />
-      </div>
-
-      <Canvas
-        camera={{ position: [8.6, 4.45, 8.9], fov: 39, near: 0.1, far: 60 }}
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping }}
-        shadows
-      >
-        <color attach="background" args={["#07090d"]} />
-        <fog attach="fog" args={["#090b10", 12, 25]} />
-        <Suspense fallback={null}><Scene01 /></Suspense>
-        <LoadingOverlay />
-        <CameraRig progressRef={progressRef} pointerRef={pointerRef} />
-        <EffectComposer multisampling={0}>
-          <Bloom intensity={0.48} luminanceThreshold={0.62} luminanceSmoothing={0.35} mipmapBlur />
-          <Noise opacity={0.008} />
-          <Vignette eskil={false} offset={0.18} darkness={0.42} />
-        </EffectComposer>
-      </Canvas>
+    <main className="scene-viewer" aria-label="Visor del escenario 3D">
+      <SceneErrorBoundary>
+        <Canvas shadows gl={{ toneMapping: ACESFilmicToneMapping, toneMappingExposure: 1.05 }} camera={{ position: cameraSettings.position, fov: 50 }} dpr={[1, 1.5]} frameloop="demand" fallback={<p className="scene-error">Tu navegador no tiene WebGL disponible.</p>}>
+          <color attach="background" args={["#10151e"]} />
+          <Suspense fallback={<Loading />}>
+            <Scenario assemblyRun={assemblyRun} onReady={onReady} />
+          </Suspense>
+          <EffectComposer multisampling={0}>
+            <Bloom luminanceThreshold={1.1} intensity={0.3} mipmapBlur />
+          </EffectComposer>
+        </Canvas>
+      </SceneErrorBoundary>
+      {ready && <button className="replay-assembly" onClick={() => { setReady(false); setAssemblyRun((value) => value + 1); }}>Repetir ensamblaje</button>}
     </main>
   );
 }
